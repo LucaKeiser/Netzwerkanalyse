@@ -1,0 +1,163 @@
+---
+title: "Aufgabenblatt zur Heimarbeit 1"
+author: "Mirco Bazzani, Luca Keiser & Amir Shehadeh"
+subtitle: 'Seminar: Methoden der sozialen Netzwerkanalyse'
+output:
+  word_document: default
+  pdf_document: default
+editor_options:
+  chunk_output_type: console
+---
+<br>
+<br>
+
+Für unsere Netzwerkanalyse verwenden wir einen Datensatz, der von Lobbywatch zur Verfügung gestellt wird. Die Plattform “thematisiert Interessenbindungen zwischen National‐ und Ständeräten zu Firmen, Vereinigungen und Institutionen. Gleichzeitig wird der Einfluss dieser Verbände, Organisationen und Firmen analysiert” (Lobbywatch 2022). 
+Wir haben die Daten aus dem Archiv von Lobbywatch selbst bezogen. Das Archiv ist online zugänglich. Die Daten können mit folgendem Link heruntergeladen werden: 
+https://lobbywatch.ch/de/seite/datenexport 
+
+Der Datensatz von selbst ist sehr umfangreich. Das verwendete Archiv beinhaltet Daten über die Zugehörigkeit der Parlamentarier:innen zu den Lobbyorganisation, die Liste der Zutrittsberechtigungen und eine Auflistung der Vergütungstransparenz. Dieses Format würde sowohl 2-Mode- (Ständerät:innen zu Organisationen) als auch 1-Mode-Analyse (ausschliesslich Organisationen oder Ständerät:innen) zulassen. Vorerst betrachten wir jedoch nur die Verbindungen zwischen den Parlamentarier:innen untereinander. Für unsere Heimarbeit beschränken wir uns auf Mitglider des Ständerates. Insgesamt sind Informationen über 45 Ständerät:innen  enthalten. Wir interessieren uns dafür, welche Mitglieder des Ständerates gemeinsam in den verschiedenen Interessensgruppen vertreten sind. Das heisst, dass es sich bei den Kanten in unserem Netzwerk um die Ständerät:innen selbst handelt. Die Kanten ihrerseits stellen die gemeinsamen Mitgliedschaften in den jeweiligen Organisationen dar. Dies erlaubt es uns beispielsweise unter Hinzunahme der Parteizugehörigkeit Intra- sowie auch Interparteienbeziehungen über. 
+Lobbys zu skizzieren, die Beziehungen anhand der Anzahl geteilter Mandate zu gewichten und letztendlich auch mögliche Synergien zwischen Lobbyorganisationen zu identifizieren. Zuerst wird der Datensatz eingelesen (Abbildung 1). Nachdem der Datensatz eingelesen und gefiltert wurde, kann er etwas genauer betrachtet werden (Abb. 1.1). Das Netzwerkobjekt muss in unserem Fall über mehrere Schritte erstellt werden: Zuerst wird eine Liste mit allen Ständerät:innen (Abb. 2.) und eine zweite Liste mit allen Verbindungen zwischen Ständerät:innen und Organisationen (Abb. 2.1) erstellt. Dann geht es darum, herauszufinden, welche Parlamentarier:innen mit den gleichen Interessensgruppen verbunden sind. Der Code (Abb. 3 ff.) generiert die Anzahl geminsamer Organisationsmitgliedschaften für ein Parlamentarier:innenpaar. In diesem Schritt generieren wir eigentlich unsere Edge-List (nicht als Matrix, sondern als Data Frame), welche wir anschliessend für die Erstellung des Netzwerkobjektes benötigen (Abb. 3). Nun kann das finale Netzwerkobjekt mit dem igraph-Paket erstellt werden (Abb 4). In den Zeilen und Spalten der Soziomatrix (Abb. 5) sind die Kanten des Netzwerks (Ständerät:innen) dargestellt. Befindet sich in einer Zelle eine 1, bedeutet das, dass die Sänderät:innen über eine gemeinsame Mitgliedschaft in einer Organisation verfügen. Bei einem “.” ist dies nicht der Fall. Der Vorteil dieser Darstellung ist, dass sich gewisse Netzwerkeigenschaften schnell identifizieren lassen (symmetrisches oder asymmetrisches Netzwerk etc.). Der Nachteil ist, dass die Soziomatrix ab einer gewissen Netzwerkgrösse viele leere Zellen beinhaltet (“Sparsitiy-Problem”). Die Kantenliste (Abb. 6) listet alle Kanten (gemeinsame Organisationsmitgliedschaften) des Netzwerks auf. Bei dieser Darstellung kommt es nicht zum oben erwähnten Sparsity-Problem. Am Schluss fügen wir unserem Netzwerk zusätzliche Knotenattribute hinzu. Hierfür wird eine Liste mit den zusätzlichen Attributen (Namen und Parteizugehörigkeit der Ständerät:innnen) erstellt (Abb. 7). Manipulationen der Netzwerkdaten werden mit tidygraph-Paket erledigt.
+
+<br>
+<br>
+
+### Anhang R-Dokumente
+
+**Abbildung1: Einlesen des Datensatzes:**
+
+```{r, message=FALSE, warning=FALSE}
+setwd("C:/Users/LucaK/Desktop/Uni Luzern/Master/3. Semester/Netzwerkanalyse/Heimarbeit")
+
+library(tidyverse)
+library(janitor)
+
+
+# Einlesen des Datensatzes
+doc <- read_delim("Data/Lobbywatch/cartesian_minimal_parlamentarier_interessenbindung.csv",
+                   delim = "\t")
+
+# Wir interessieren uns nur die Ständerät:innen
+doc_SR <- doc %>% 
+  filter(parlamentarier_rat == "SR")
+
+doc_SR
+```
+
+**Abbildung 1.1**
+
+```{r, message=FALSE, warning=FALSE}
+names(doc_SR)
+```
+
+```{r, message=FALSE, warning=FALSE}
+doc_SR %>% 
+  count(parlamentarier_name)
+```
+
+Anmerkung: Die Freiburger Ständerätin Chassot Isabelle ist nicht im Datensatz enthalten.
+
+**Abbildung 2**
+
+```{r, message=FALSE, warning=FALSE}
+parlamentarier <- doc_SR %>% 
+  select(parlamentarier_id, 
+         parlamentarier_name, 
+         parlamentarier_partei) %>% 
+  group_by(parlamentarier_name) %>% 
+  distinct(parlamentarier_id, 
+           .keep_all = TRUE) %>% 
+  arrange(parlamentarier_id) %>% 
+  rename("id" = parlamentarier_id) %>% 
+  rename("name" = parlamentarier_name)
+
+parlamentarier
+```
+
+**Abbildung 2.1**
+
+```{r, message=FALSE, warning=FALSE}
+groupings <- doc_SR %>% 
+  select(parlamentarier_id,
+         organisation_id) %>% 
+  mutate(parlamentarier_id = str_c(parlamentarier_id, "",
+                                   sep = "_")) %>% # Wird später gebraucht, um die einzelnen IDs wieder voneinander trennen zu können.
+  group_by(organisation_id, parlamentarier_id) %>% 
+  distinct() %>% 
+  summarise(sum = n())
+
+groupings
+```
+
+**Abbildung 3**
+
+```{r, message=FALSE, warning=FALSE}
+# Quelle: https://stackoverflow.com/questions/64034719/count-number-of-times-two-values-co-occur-within-a-group-in-r
+
+library(data.table)
+setDT(groupings)
+
+# N = Anahl geteilter Organisationsmitgliedschaften,
+ties_SR <- groupings[groupings, on = "organisation_id", allow.cartesian = TRUE][parlamentarier_id<i.parlamentarier_id, .N, .(pair = paste0(parlamentarier_id, i.parlamentarier_id))]
+
+# Erstellen eines tidy-Datensatzes
+ties_SR <- ties_SR %>% 
+  separate(pair, 
+           into = c("from", "to"), 
+           sep = "_") %>% 
+  rename("weight" = N) %>% 
+  arrange(desc(weight)) %>% 
+  filter(weight >= 5) # Es werden nur Verbindungen zwischen Parlamentarier:innen verwendet, die in >= 5 gleichen Organisationen einsitzen. 
+
+ties_SR
+```
+
+**Abbildung 4**
+
+```{r, message=FALSE, warning=FALSE}
+detach(package:data.table)
+library(igraph)
+
+net_SR <- graph_from_data_frame(ties_SR)
+
+net_SR
+```
+
+**Abbildung 5: Darstellung des Netzwerks als Soziomatrix**
+
+```{r, message=FALSE, warning=FALSE}
+as_adjacency_matrix(net_SR)
+```
+
+**Abbildung 6: Darstellung des Netzwerks als Kantenliste**
+
+```{r, message=FALSE, warning=FALSE}
+as_edgelist(net_SR)
+```
+
+**Abbildung 7:**
+
+```{r, message=FALSE, warning=FALSE}
+get.vertex.attribute(net_SR)
+```
+
+```{r message=FALSE, warning=FALSE}
+library(tidygraph)
+
+# erstellen eines tbl_grpah, ipgraph
+net_SR <-  as_tbl_graph(net_SR)
+
+
+# Node-Attribute hinzufügen
+net_SR <- net_SR %>% 
+  activate(nodes) %>%
+  # Datentyp muss angepasst werden.
+  mutate(name = as.numeric(name)) %>% 
+  left_join(parlamentarier,
+            by = c("name" = "id")) %>% 
+  rename("id" = "name",
+         "name" = "name.y")
+
+get.vertex.attribute(net_SR)
+```
+
+

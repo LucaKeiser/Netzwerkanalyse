@@ -1,0 +1,168 @@
+---
+title: "Aufgabenblatt zur Heimarbeit 2"
+author: "Mirco Bazzani, Luca Keiser & Amir Shehadeh"
+subtitle: 'Seminar: Methoden der sozialen Netzwerkanalyse'
+output:
+  word_document: default
+  pdf_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+## Aufgabenblatt zur Heimarbeit 2
+### Methoden der sozialen Netzwerkanalyse
+
+
+### Anhang R-Dokumente
+
+```{r data import, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(janitor)
+library(data.table)
+
+# Einlesen des Datensatzes
+doc <- read_delim("Data/Lobbywatch/cartesian_minimal_parlamentarier_interessenbindung.csv",
+                   delim = "\t")
+
+# Wir interessieren uns nur die Ständerät:innen
+doc_SR <- doc %>% 
+  filter(parlamentarier_rat == "SR")
+
+parlamentarier <- doc_SR %>% 
+  select(parlamentarier_id, 
+         parlamentarier_name, 
+         parlamentarier_partei) %>% 
+  group_by(parlamentarier_name) %>% 
+  distinct(parlamentarier_id, 
+           .keep_all = TRUE) %>% 
+  arrange(parlamentarier_id) %>% 
+  rename("id" = parlamentarier_id) %>% 
+  rename("name" = parlamentarier_name)
+
+groupings <- doc_SR %>% 
+  select(parlamentarier_id,
+         organisation_id) %>% 
+  mutate(parlamentarier_id = str_c(parlamentarier_id, "",
+                                   sep = "_")) %>% # Wird später gebraucht, um die einzelnen IDs wieder voneinander trennen zu können.
+  group_by(organisation_id, parlamentarier_id) %>% 
+  distinct() %>% 
+  summarise(sum = n())
+
+setDT(groupings)
+
+# N = Anahl geteilter Organisationsmitgliedschaften,
+ties_SR <- groupings[groupings, on = "organisation_id", allow.cartesian = TRUE][parlamentarier_id<i.parlamentarier_id, .N, .(pair = paste0(parlamentarier_id, i.parlamentarier_id))]
+
+# Erstellen eines tidy-Datensatzes
+ties_SR <- ties_SR %>% 
+  separate(pair, 
+           into = c("from", "to"), 
+           sep = "_") %>% 
+  rename("weight" = N) %>% 
+  arrange(desc(weight)) %>% 
+  filter(weight >= 5) # Es werden nur Verbindungen zwischen Parlamentarier:innen verwendet, die in >= 5 gleichen Organisationen einsitzen. 
+
+
+# Die Gewichtung soll 01-normiert werden, damit sie einheitlicher dargestellt wird
+ties_SR$weight <- (ties_SR$weight - min(ties_SR$weight)) /  (max(ties_SR$weight) - min(ties_SR$weight))
+
+# Damit keine Null-Werte entstehend wird 0.05 zu diesen addiert
+ties_SR$weight[ties_SR$weight == 0] <- ties_SR$weight[ties_SR$weight == 0] + 0.05
+
+# Wir wollen keine Interparty-Edges, deshalb werden diese gelöscht.
+# Interparty bedeutet: Personen in derselben Partei werden nicht als Edge dargestellt.
+non_interparty <- c()
+
+for(i in 1:nrow(ties_SR)){
+  
+  from <- ties_SR$from[i]
+  to <- ties_SR$to[i]
+  
+  if(parlamentarier[parlamentarier$id == from,3] == parlamentarier[parlamentarier$id == to,3]){
+   non_interparty <- append(non_interparty,i)
+  }
+}
+
+ties_SR_reduced <- ties_SR[-non_interparty,]
+```
+
+```{r unstyled plot}
+detach(package:data.table)
+library(igraph)
+
+net_SR <- graph_from_data_frame(ties_SR_reduced)
+
+net_SR <- as.undirected(
+  net_SR,
+  mode = "collapse",
+  edge.attr.comb = igraph_opt("edge.attr.comb")
+)
+
+net_SR_2 <-  as_tbl_graph(net_SR)
+
+# Node-Attribute hinzufügen
+net_SR_2 <- net_SR_2 %>% 
+  activate(nodes) %>%
+  # Datentyp muss angepasst werden.
+  mutate(name = as.numeric(name)) %>% 
+  left_join(parlamentarier,
+            by = c("name" = "id")) %>% 
+  rename("id" = "name",
+         "name" = "name.y")
+plot(net_SR_2)
+```
+
+```{r Plot function}
+library(statnet)
+library(GGally)
+library(ggpubr)
+
+set.seed(1234)
+
+# Für den Plot werden die ofiziellen Parteifarben vergeben
+# ggnet2 akzeptiert keine Hex-Codes, deshalb werden Annäherungen verwendet
+colors_party = c("FDP" = "cornflowerblue",
+                 "Grüne" = "chartreuse",
+                 "M" = "darkorange",
+                 "SP" = "brown1",
+                 "SVP" = "chartreuse4")
+
+# Funktion wird für die Reduktion von Redundanzen verwendet
+network_gg <- function(network,mode){
+  plot <- ggnet2(network,  
+       mode = mode,
+       color = "parlamentarier_partei",
+       palette = colors_party,
+       size = 7,
+       label = T, 
+       label.alpha = .7,
+       vjust = -1,
+       edge.size = "weight",
+       legend.position = "bottom") +
+    labs(title = "Parlamentarisches Netzwerk des Schweizer Ständerates",
+       subtitle = "Gewichtet nach Menge der gemeinsamen Einsitze",
+       caption = "Quelle: lobbywatch.ch | Nodes = 35, Edges = 206")
+  
+  return(plot)
+}
+
+```
+
+## Fruchtermann Reingold
+
+```{r fruchtermanreingold, echo=FALSE}
+network_gg(net_SR_2,"fruchtermanreingold")
+```
+
+## Circle
+
+```{r circle, echo=FALSE}
+network_gg(net_SR_2,"circle")
+```
+
+## Kamadakawai
+
+```{r kamadakawai, echo=FALSE}
+network_gg(net_SR_2,"kamadakawai")
+```
+

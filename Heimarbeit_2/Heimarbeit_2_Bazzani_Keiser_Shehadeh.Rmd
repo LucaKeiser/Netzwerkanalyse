@@ -12,13 +12,20 @@ editor_options:
 ## Aufgabenblatt zur Heimarbeit 2
 ### Methoden der sozialen Netzwerkanalyse
 
+Die folgenden Visualisierungen basieren auf dem in der ersten Heimarbeit etablierten Ständeratsnetzwerk (siehe Keiser, Shehadeh & Bazzani Heimarbeit 1). Wir haben uns dafür entschieden, Ständeräte dann als Vernetzt zu zählen, wenn sie unter Ausnahme der Parteizugehörigkeit einen gemeinsamen Einsitz in einer Organisation ausserhalb des Ständerates haben (Total 206 Edges). Alle Kanten des Graphen gelten dabei als ungerichtet da wir davon ausgehen, dass sich die Personen jeweills gegenseitig kennen und wahrnehmen. Dieser Beziehung wird keine positive oder negative Konotation zugewiesen. 
+
+Die Kanten werden im Anschluss anhand der Anzahl gemeinsamer Einsitze gewichtet, wobei stärkere Verbindungen durch mehr gemeinsame Einsitze gekennzeichnet werden. Zudem haben wir uns auf Grund der grossen Dichte des Netzwerkes dafür entschieden, lediglich jene Verbindungen zu visualisieren, welche mindestens in fünf gemeinsamen Ämtern zu finden sind, wodurch die ursprüngliche Anzahl von 45 Ständerät:innen im Netzwerk auf 35 reduziert wurde. Gleichzeitig ist so eine gewisse Verbindungsstärke zu vermuten, da die gezeigten Parlamentarier:innen neben dem Ständerat mindestens fünf Überschneidungen in Privat- und Arbeitsleben vorweisen können.
+
 
 ### Anhang R-Dokumente
+## Datenbereinigung
 
-```{r data import, message=FALSE, warning=FALSE, include=FALSE}
+```{r data import, echo=TRUE, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(janitor)
 library(data.table)
+
+set.seed(1234)
 
 # Einlesen des Datensatzes
 doc <- read_delim("Data/Lobbywatch/cartesian_minimal_parlamentarier_interessenbindung.csv",
@@ -73,6 +80,8 @@ ties_SR$weight[ties_SR$weight == 0] <- ties_SR$weight[ties_SR$weight == 0] + 0.0
 # Interparty bedeutet: Personen in derselben Partei werden nicht als Edge dargestellt.
 non_interparty <- c()
 
+# Der Loop schaut, ob zwei Nodes mit einer Verbindung derselben Partei angehören. Falls ja, dann wird der Index
+# des Paares einer Liste hinzugefügt. Diese Liste wird dann aus unserem Datensatz entfernt.
 for(i in 1:nrow(ties_SR)){
   
   from <- ties_SR$from[i]
@@ -86,9 +95,14 @@ for(i in 1:nrow(ties_SR)){
 ties_SR_reduced <- ties_SR[-non_interparty,]
 ```
 
+## Plot ohne graphische Anpassungen
+
+Entsprechend der fünf Guidelines für Netzwerkdarstellungen von Douglas A. Luke (vgl. 2015: 47) haben wr versucht einen Graphen zu erstellen, welcher Kantenüberschneidungen minimiert, eine gewisse Symmetrie herstellt, Kantenlängen möglichst konstant hält während ein maximaler Winkel angestrebt wird und den gesamten Plot auf einer möglichst kleinen Fläche darstellt.  
+
 ```{r unstyled plot}
 detach(package:data.table)
 library(igraph)
+library(statnet)
 
 net_SR <- graph_from_data_frame(ties_SR_reduced)
 
@@ -109,15 +123,18 @@ net_SR_2 <- net_SR_2 %>%
             by = c("name" = "id")) %>% 
   rename("id" = "name",
          "name" = "name.y")
-plot(net_SR_2)
+
+data(net_SR_2)
+op <- par(mar = c(0,0,2,0), mfrow=c(1,2))
+plot(net_SR_2, layout = layout.circle, main = "Circle", vertex.label=NA)
+plot(net_SR_2, layout = layout.fruchterman.reingold, main='Fruchtermannreingold', vertex.label=NA)
+par(op)
 ```
 
 ```{r Plot function}
 library(statnet)
 library(GGally)
 library(ggpubr)
-
-set.seed(1234)
 
 # Für den Plot werden die ofiziellen Parteifarben vergeben
 # ggnet2 akzeptiert keine Hex-Codes, deshalb werden Annäherungen verwendet
@@ -128,8 +145,11 @@ colors_party = c("FDP" = "cornflowerblue",
                  "SVP" = "chartreuse4")
 
 # Funktion wird für die Reduktion von Redundanzen verwendet
-network_gg <- function(network,mode){
-  plot <- ggnet2(network,  
+network_gg <- function(network,mode,gewichtet){
+  
+  if(gewichtet == 1){
+    
+    plot <- ggnet2(network,  
        mode = mode,
        color = "parlamentarier_partei",
        palette = colors_party,
@@ -142,27 +162,37 @@ network_gg <- function(network,mode){
     labs(title = "Parlamentarisches Netzwerk des Schweizer Ständerates",
        subtitle = "Gewichtet nach Menge der gemeinsamen Einsitze",
        caption = "Quelle: lobbywatch.ch | Nodes = 35, Edges = 206")
+    
+  }else{
+    
+      plot <- ggnet2(network,  
+       mode = mode,
+       color = "parlamentarier_partei",
+       palette = colors_party,
+       size = 7,
+       label = T, 
+       label.alpha = .7,
+       vjust = -1,
+       legend.position = "bottom") +
+    labs(title = "Parlamentarisches Netzwerk des Schweizer Ständerates",
+       subtitle = "Gewichtet nach Menge der gemeinsamen Einsitze",
+       caption = "Quelle: lobbywatch.ch | Nodes = 35, Edges = 206")
+  
+  }
   
   return(plot)
 }
 
 ```
 
-## Fruchtermann Reingold
+## Parteifarbe eingezeichnet - Fruchtermann Reingold
 
 ```{r fruchtermanreingold, echo=FALSE}
-network_gg(net_SR_2,"fruchtermanreingold")
+network_gg(net_SR_2,"fruchtermanreingold", 0)
 ```
 
-## Circle
+## Parteifarbe eingezeichnet und Kantengewichtung - Fruchtermann Reingold
 
-```{r circle, echo=FALSE}
-network_gg(net_SR_2,"circle")
+```{r fruchtermanreingold, echo=FALSE}
+network_gg(net_SR_2,"fruchtermanreingold", 1)
 ```
-
-## Kamadakawai
-
-```{r kamadakawai, echo=FALSE}
-network_gg(net_SR_2,"kamadakawai")
-```
-

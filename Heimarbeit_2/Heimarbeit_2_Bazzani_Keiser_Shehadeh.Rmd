@@ -135,7 +135,7 @@ net_SR <- net_SR %>%
 
 Entsprechend der fünf Guidelines für Netzwerkdarstellungen von Douglas A. Luke (vgl. 2015: 47) haben wr versucht einen Graphen zu erstellen, welcher Kantenüberschneidungen minimiert, eine gewisse Symmetrie herstellt, Kantenlängen möglichst konstant hält und zudem maximale Winkel anstrebt. Darüber hinaus soll der Plot auf einer möglichst kleinen Fläche darstellt werden. 
 
-### Plot ohne graphische Anpassungen
+### Netzwerkdarstellung ohne graphische Anpassungen
 
 ```{r message=FALSE, warning=FALSE}
 # Ohne jegliche Attribute
@@ -164,7 +164,7 @@ net_SR %>%
   theme_graph()
 ```
 
-### Plot mit Knotenattributen
+### Netzwerkdarstellung mit Knotenattributen
 
 ```{r message=FALSE, warning=FALSE}
 # Mit Knotenattributen
@@ -192,7 +192,7 @@ net_SR %>%
        caption = "Knoten mit einem Betweenness-Score < 5 wurden herausgefiltert")
 ```
 
-### Plot mit Knoten- und Kantenattributen
+### Netzwerkdarstellung mit Knoten- und Kantenattributen
 
 ```{r message=FALSE, warning=FALSE}
 # Hinzufügen der Kantenattribute

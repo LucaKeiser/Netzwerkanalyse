@@ -171,7 +171,7 @@ net_SR %>%
 set.seed(1245)
 net_SR %>% 
   activate(nodes) %>% 
-  filter(betweenness > 5) %>% 
+  filter(betweenness >= 5) %>% 
   ggraph(layout = "fr") + 
   geom_node_point(aes(color = parlamentarier_partei,
                       size = betweenness)) + 
@@ -199,7 +199,7 @@ net_SR %>%
 set.seed(1245)
 net_SR %>% 
   activate(nodes) %>% 
-  filter(betweenness > 5) %>% 
+  filter(betweenness >= 5) %>% 
   ggraph(layout = "fr") + 
   geom_node_point(aes(color = parlamentarier_partei,
                       size = betweenness)) + 

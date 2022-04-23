@@ -1,24 +1,12 @@
 ---
-title: "Aufgabenblatt zur Heimarbeit 2"
-author: "Mirco Bazzani, Luca Keiser & Amir Shehadeh"
-subtitle: 'Seminar: Methoden der sozialen Netzwerkanalyse'
-output:
-  word_document: default
-  pdf_document: default
-editor_options:
+title: "Untitled"
+author: "Luca"
+date: "22/04/2022"
+output: html_document
+editor_options: 
   chunk_output_type: console
 ---
 
-## Aufgabenblatt zur Heimarbeit 2
-### Methoden der sozialen Netzwerkanalyse
-
-Die folgenden Visualisierungen basieren auf dem in der ersten Heimarbeit etablierten Ständeratsnetzwerk (siehe Keiser, Shehadeh & Bazzani Heimarbeit 1). Wir haben uns dafür entschieden, Ständerät:innen dann als Vernetzt zu zählen, wenn sie unter Ausnahme der Parteizugehörigkeit einen gemeinsamen Einsitz in einer Organisation ausserhalb des Ständerates haben (Total 206 Edges). Alle Kanten des Graphen gelten dabei als ungerichtet da wir davon ausgehen, dass sich die Personen jeweills gegenseitig kennen und wahrnehmen. Dieser Beziehung wird keine positive oder negative Konotation zugewiesen. 
-
-Die Kanten werden im Anschluss anhand der Anzahl gemeinsamer Einsitze gewichtet, wobei stärkere Verbindungen durch mehr gemeinsame Einsitze gekennzeichnet werden. Zudem haben wir uns auf Grund der grossen Dichte des Netzwerkes dafür entschieden, lediglich jene Verbindungen zu visualisieren, welche mindestens in fünf gemeinsamen Ämtern zu finden sind, wodurch die ursprüngliche Anzahl von 45 Ständerät:innen im Netzwerk auf 35 reduziert wurde. Gleichzeitig ist so eine gewisse Verbindungsstärke zu vermuten, da die gezeigten Parlamentarier:innen neben dem Ständerat mindestens fünf Überschneidungen in Privat- und Arbeitsleben vorweisen können.
-
-
-### Anhang R-Dokumente
-## Datenbereinigung
 
 ```{r data import, echo=TRUE, message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -110,7 +98,7 @@ diameter(net_SR,
 ```
 
 
-```{r message=FALSE, warning=FALSE}
+```{r data import, echo=TRUE, message=FALSE, warning=FALSE}
 # hinzufügen der Knotenattribute
 net_SR <- net_SR %>% 
   activate(nodes) %>%
@@ -133,11 +121,7 @@ net_SR <- net_SR %>%
 
 ## Visualisierungen
 
-Entsprechend der fünf Guidelines für Netzwerkdarstellungen von Douglas A. Luke (vgl. 2015: 47) haben wr versucht einen Graphen zu erstellen, welcher Kantenüberschneidungen minimiert, eine gewisse Symmetrie herstellt, Kantenlängen möglichst konstant hält und zudem maximale Winkel anstrebt. Darüber hinaus soll der Plot auf einer möglichst kleinen Fläche darstellt werden. 
-
-### Plot ohne graphische Anpassungen
-
-```{r message=FALSE, warning=FALSE}
+```{r}
 # Ohne jegliche Attribute
 set.seed(1234)
 net_SR %>% 
@@ -162,11 +146,9 @@ net_SR %>%
        subtitle = "Ohne jegliche Attribute",
        caption = "Knoten mit einem Betweenness-Score < 5 wurden herausgefiltert") +
   theme_graph()
-```
 
-### Plot mit Knotenattributen
 
-```{r message=FALSE, warning=FALSE}
+
 # Mit Knotenattributen
 set.seed(1245)
 net_SR %>% 
@@ -190,11 +172,11 @@ net_SR %>%
        subtitle = "Knotenattribute: Namen, Parteizugehörigkeit und Betweenness-Score\n",
        color = "Partei",
        caption = "Knoten mit einem Betweenness-Score < 5 wurden herausgefiltert")
-```
 
-### Plot mit Knoten- und Kantenattributen
 
-```{r message=FALSE, warning=FALSE}
+
+
+
 # Hinzufügen der Kantenattribute
 set.seed(1245)
 net_SR %>% 
@@ -222,4 +204,5 @@ net_SR %>%
        color = "Partei",
        caption = "Knoten mit einem Betweenness-Score < 5 wurden herausgefiltert")
 ```
+
 

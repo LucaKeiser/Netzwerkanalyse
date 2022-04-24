@@ -4,11 +4,12 @@ author: "Mirco Bazzani, Luca Keiser & Amir Shehadeh"
 subtitle: 'Seminar: Methoden der sozialen Netzwerkanalyse'
 output:
   word_document: default
+  html_document:
+    df_print: paged
   pdf_document: default
 editor_options:
   chunk_output_type: console
 ---
-# Test schreiben
 
 ## Aufgabenblatt zur Heimarbeit 2
 ### Methoden der sozialen Netzwerkanalyse
@@ -21,7 +22,7 @@ Die Kanten werden im Anschluss anhand der Anzahl gemeinsamer Einsitze gewichtet,
 ### Anhang R-Dokumente
 ## Datenbereinigung
 
-```{r data import, echo=TRUE, message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(tidygraph)
 library(igraph)
@@ -31,8 +32,7 @@ library(data.table)
 
 
 # Einlesen des Datensatzes
-doc <- read_delim("Data/Lobbywatch/cartesian_minimal_parlamentarier_interessenbindung.csv",
-                   delim = "\t")
+doc <- read_delim(here::here("Data", "Lobbywatch", "cartesian_minimal_parlamentarier_interessenbindung.csv"))
 
 # Wir interessieren uns nur die Ständerät:innen
 doc_SR <- doc %>% 
@@ -51,7 +51,7 @@ parlamentarier <- doc_SR %>%
 ```
 
 
-```{r data import, echo=TRUE, message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE}
 # Erstellen der Gruppen
 groupings <- doc_SR %>% 
   select(parlamentarier_id,
@@ -69,7 +69,7 @@ ties_SR <- groupings[groupings, on = "organisation_id", allow.cartesian = TRUE][
 ```
 
 
-```{r data import, echo=TRUE, message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE}
 # Erstellen eines tidy-Datensatzes
 ties_SR <- ties_SR %>% 
   separate(pair, 

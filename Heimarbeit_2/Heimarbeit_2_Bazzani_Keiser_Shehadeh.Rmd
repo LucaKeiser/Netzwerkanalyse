@@ -219,7 +219,7 @@ net_SR %>%
   guides(size = FALSE) + 
   theme_graph() + 
   labs(title = "Ständerätliches Netzwerk - Fruchtermannreingold",
-       subtitle = "Knotenattribute: Namen, Parteizugehörigkeit und Betweenness-Score\nKantenattribute: Betweenness-Score",
+       subtitle = "Knotenattribute: Namen, Parteizugehörigkeit und Betweenness-Score\nKantenattribute: gemeinsame Einsitze/Mitgliedschaften",
        color = "Partei",
        caption = "Knoten mit einem Betweenness-Score < 5 wurden herausgefiltert")
 ```

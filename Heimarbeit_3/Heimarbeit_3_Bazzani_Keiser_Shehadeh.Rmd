@@ -156,6 +156,7 @@ measurements_df <- data.frame(Measurement = labels_df,
            `With Intraparty Connections` = c(comp_sr,dens_sr,dia_sr,size_sr,cliq_sr),
            `Without Intraparty Connections` = c(comp_sr_red,dens_sr_red,dia_sr_red,size_sr_red,cliq_sr_red))
 
+# Tidy Print
 kable(measurements_df, caption = "Masszahlen der Netzwerke mit und ohne innerparteilicher Beziehungen")
 
 ```

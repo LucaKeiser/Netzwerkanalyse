@@ -11,12 +11,8 @@ editor_options:
   chunk_output_type: console
 ---
 
-## Aufgabenblatt zur Heimarbeit 2
+## Aufgabenblatt zur Heimarbeit 3
 ### Methoden der sozialen Netzwerkanalyse
-
-Die folgenden Visualisierungen basieren auf dem in der ersten Heimarbeit etablierten Ständeratsnetzwerk (siehe Keiser, Shehadeh & Bazzani Heimarbeit 1). Alle Kanten des Graphen gelten dabei als ungerichtet da wir davon ausgehen, dass sich die Personen jeweills gegenseitig kennen und wahrnehmen. Dieser Beziehung wird keine positive oder negative Konnotation zugewiesen. 
-
-Die Kanten werden im Anschluss anhand der Anzahl gemeinsamer Einsitze gewichtet, wobei stärkere Verbindungen durch mehr gemeinsame Einsitze gekennzeichnet werden. Zudem haben wir uns auf Grund der grossen Dichte des Netzwerkes dafür entschieden, lediglich jene Verbindungen zu visualisieren, welche mindestens in fünf gemeinsamen Ämtern zu finden sind, wodurch die ursprüngliche Anzahl von 45 Ständerät:innen im Netzwerk auf 35 reduziert wurde. Zudem wurden Knoten entfernt, welche einen Betweenness-Score von < 5 aufwiesen. Gleichzeitig ist so eine gewisse Verbindungsstärke zu vermuten, da die gezeigten Parlamentarier:innen neben dem Ständerat mindestens fünf Überschneidungen in Privat- und Arbeitsleben vorweisen können.
 
 
 ### Anhang R-Dokumente
@@ -29,19 +25,27 @@ library(igraph)
 library(ggraph)
 library(janitor)
 library(data.table)
+library(knitr)
+library(ggforce)
 
 
 # Einlesen des Datensatzes
 doc <- read_delim(here::here("Data", "Lobbywatch", "cartesian_minimal_parlamentarier_interessenbindung.csv"))
 
 # Wir interessieren uns nur die Ständerät:innen
+# Zudem möchten wir lediglich ihre ausserparteilichen Verbindungen
 doc_SR <- doc %>% 
-  filter(parlamentarier_rat == "SR")
+  filter(parlamentarier_rat == "SR") %>% 
+  filter(organisation_rechtsform != "Parlamentarische Gruppe")
+  
 
 parlamentarier <- doc_SR %>% 
   select(parlamentarier_id, 
          parlamentarier_name, 
          parlamentarier_partei) %>% 
+  mutate(parlamentarier_partei = case_when(
+    is.na(parlamentarier_partei) ~ "Parteilos",
+    TRUE ~ as.character(parlamentarier_partei))) %>% 
   group_by(parlamentarier_name) %>% 
   distinct(parlamentarier_id, 
            .keep_all = TRUE) %>% 
@@ -76,44 +80,92 @@ ties_SR <- ties_SR %>%
            into = c("from", "to"), 
            sep = "_") %>% 
   rename("weight" = N) %>% 
-  arrange(desc(weight)) %>% 
-  filter(weight >= 5) # Es werden nur Verbindungen zwischen Parlamentarier:innen verwendet, die in >= 5 gleichen Organisationen einsitzen. 
+  arrange(desc(weight))
+  #filter(weight >= 5) # Es werden nur Verbindungen zwischen Parlamentarier:innen verwendet, die in >= 5 gleichen Organisationen einsitzen. 
 
+# Wir wollen keine Intraparty-Edges, deshalb werden diese gelöscht.
+# Intraparty bedeutet: Personen in derselben Partei werden nicht als Edge dargestellt.
+non_interparty <- c()
+
+# Der Loop schaut, ob zwei Nodes mit einer Verbindung derselben Partei angehören. Falls ja, dann wird der Index
+# des Paares einer Liste hinzugefügt. Diese Liste wird dann aus unserem Datensatz entfernt.
+
+
+for(i in 1:nrow(ties_SR)){
+  
+  from <- ties_SR$from[i]
+  to <- ties_SR$to[i]
+  if(parlamentarier[parlamentarier$id == from,3] == parlamentarier[parlamentarier$id == to,3]){
+    non_interparty <- append(non_interparty,i)
+  }
+}
+
+ties_SR_reduced <- ties_SR[-non_interparty,]
 
 # Knoten
 parlamentarier
 
 # Kanten
 ties_SR
+ties_SR_reduced
 
+```
 
-# Der Variationsbereich der Gewichtung (Kantenattribut) wird auf [0, 1] festgelegt. 
-ties_SR$weight_std <- (ties_SR$weight - min(ties_SR$weight)) /  (max(ties_SR$weight) - min(ties_SR$weight))
-
-# Damit keine Null-Werte entstehend wird 0.05 zu diesen addiert
-ties_SR$weight[ties_SR$weight == 0] <- ties_SR$weight[ties_SR$weight == 0] + 0.05
-
-
+```{r}
 # erstellen des Netzwerkobjekts (tidygraph)
 net_SR <- as_tbl_graph(ties_SR,
                        directed = FALSE)
+net_SR_reduced <- as_tbl_graph(ties_SR_reduced,
+                       directed = FALSE)
 
+```
+
+## Masszahlen - gesamtes Netzwerk
+
+Vergleich zwischen dem dichteren Netzwerk mitsamt innerparteilicher Edges und jenem, welches nur ausserparteiliche Edges darstellt.
+
+```{r}
 
 # Generelle Netzwerkangaben
 # Component
-count_components(net_SR)
+comp_sr <- count_components(net_SR)
+comp_sr_red <- count_components(net_SR_reduced)
 # Dichte
-edge_density(net_SR,
+dens_sr <- edge_density(net_SR,
+             loops = FALSE)
+dens_sr_red <- edge_density(net_SR_reduced,
              loops = FALSE)
 # Diameter
-diameter(net_SR,
+dia_sr <- diameter(net_SR,
          directed = FALSE)
+dia_sr_red <- diameter(net_SR_reduced,
+         directed = FALSE)
+
+# Size
+size_sr <- gsize(net_SR)
+size_sr_red <- gsize(net_SR_reduced)
+
+# Cliques
+cliq_sr <- count_max_cliques(net_SR)
+cliq_sr_red <- count_max_cliques(net_SR_reduced)
+
+# Erstellen eines zusammenfassenden Dataframes für die Masszahlen
+labels_df <- c("Components", "Density", "Diameter", "Size", "Cliques")
+
+measurements_df <- data.frame(Measurement = labels_df,
+           `With Intraparty Connections` = c(comp_sr,dens_sr,dia_sr,size_sr,cliq_sr),
+           `Without Intraparty Connections` = c(comp_sr_red,dens_sr_red,dia_sr_red,size_sr_red,cliq_sr_red))
+
+kable(measurements_df, caption = "Masszahlen der Netzwerke mit und ohne innerparteilicher Beziehungen")
+
 ```
 
+## Masszahlen - Zentralitätsmasse Nodes
+### Anhand des Netzwerks ohne innerparteilicher Beziehungen
 
 ```{r message=FALSE, warning=FALSE}
 # hinzufügen der Knotenattribute
-net_SR <- net_SR %>% 
+net_SR_reduced <- net_SR_reduced %>% 
   activate(nodes) %>%
   # Datentyp muss angepasst werden.
   mutate(name = as.numeric(name)) %>% 
@@ -123,104 +175,80 @@ net_SR <- net_SR %>%
          "name" = "name.y")
 
 # Hinzufügen Zentralitätsmasse
-net_SR <- net_SR %>% 
+net_SR_reduced <- net_SR_reduced %>% 
   activate(nodes) %>% 
   # Berechnung und standardisierung([0,1]) der Betweenness
   mutate(degree = centrality_degree(),
          betweenness = centrality_betweenness(),
          closeness = centrality_closeness())
 
+# Extrahierung der relevanten Zeilen
+masszahlen <- net_SR_reduced %>% 
+  select(name,
+         parlamentarier_partei,
+         degree,
+         betweenness,
+         closeness) %>% 
+  arrange(desc(degree))
+
+# Tidy Print
+kable(masszahlen)
+```
+
+## Cluster
+
+```{r}
+
+# Erstellen mehrerer Clusterings anhand dreier Algorithmen:
+# Edge Betweenness, Fast Greedy & Infomap
+
+cluster <- net_SR_reduced %>% 
+  activate(nodes) %>% 
+  mutate(group_edge_betweenness = group_edge_betweenness(),
+         group_fast_greedy = group_fast_greedy(),
+         group_infomap = group_infomap()) %>% 
+  select(name,
+         parlamentarier_partei,
+         group_edge_betweenness,
+         group_fast_greedy,
+         group_infomap) %>% 
+  arrange(group_edge_betweenness)
+
+# Tidy Print
+kable(cluster)
+
 ```
 
 ## Visualisierungen
-
-Entsprechend der fünf Guidelines für Netzwerkdarstellungen von Douglas A. Luke (vgl. 2015: 47) haben wir versucht einen Graphen zu erstellen, welcher Kantenüberschneidungen minimiert, eine gewisse Symmetrie herstellt, Kantenlängen möglichst konstant hält und zudem maximale Winkel anstrebt. Darüber hinaus soll der Plot auf einer möglichst kleinen Fläche darstellt werden. 
-
-### Netzwerkdarstellung ohne graphische Anpassungen
-
-```{r message=FALSE, warning=FALSE}
-# Ohne jegliche Attribute
-set.seed(1234)
-net_SR %>% 
-  activate(nodes) %>% 
-  filter(betweenness >= 5) %>% 
-  ggraph(layout = "fr") + 
-  geom_node_point() +
-  geom_edge_link() +
-  labs(title = "Ständerätliches Netzwerk - Fruchtermannreingold",
-       subtitle = "Ohne jegliche Attribute",
-       caption = "Knoten mit einem Betweenness-Score < 5 wurden herausgefiltert") +
-  theme_graph()
-
-set.seed(1234)
-net_SR %>% 
-  activate(nodes) %>% 
-  filter(betweenness > 5) %>% 
-  ggraph(layout = "circle") + 
-  geom_node_point() +
-  geom_edge_link() +
-  labs(title = "Ständerätliches Netzwerk - 'Circle'",
-       subtitle = "Ohne jegliche Attribute",
-       caption = "Knoten mit einem Betweenness-Score < 5 wurden herausgefiltert") +
-  theme_graph()
-```
-
-### Netzwerkdarstellung mit Knotenattributen
-
-```{r message=FALSE, warning=FALSE}
-# Mit Knotenattributen
-set.seed(1245)
-net_SR %>% 
-  activate(nodes) %>% 
-  filter(betweenness >= 5) %>% 
-  ggraph(layout = "fr") + 
-  geom_node_point(aes(color = parlamentarier_partei,
-                      size = betweenness)) + 
-  geom_node_text(aes(label = name),
-                 repel = TRUE) +
-  scale_size(range = c(5, 15)) +
-  geom_edge_link() +
-  scale_color_manual(values = c("FDP" = "cornflowerblue",
-                                "Grüne" = "chartreuse2",
-                                "M" = "darkorange",
-                                "SP" = "brown1",
-                                "SVP" = "chartreuse4")) + 
-  guides(size = FALSE) + 
-  theme_graph() + 
-  labs(title = "Ständerätliches Netzwerk - Fruchtermannreingold",
-       subtitle = "Knotenattribute: Namen, Parteizugehörigkeit und Betweenness-Score\n",
-       color = "Partei",
-       caption = "Knoten mit einem Betweenness-Score < 5 wurden herausgefiltert")
-```
-
 ### Netzwerkdarstellung mit Knoten- und Kantenattributen
 
 ```{r message=FALSE, warning=FALSE}
 # Hinzufügen der Kantenattribute
 set.seed(1245)
-net_SR %>% 
+
+net_SR_reduced %>% 
   activate(nodes) %>% 
-  filter(betweenness >= 5) %>% 
+  mutate(group_fast_greedy = as.factor(group_fast_greedy())) %>% 
   ggraph(layout = "fr") + 
   geom_node_point(aes(color = parlamentarier_partei,
                       size = betweenness)) + 
   geom_node_text(aes(label = name),
                  repel = TRUE) +
-  geom_edge_link(aes(width = weight_std,
-                     alpha = weight_std),
+  geom_edge_link(aes(width = weight),
                  show.legend = FALSE) +
+  geom_mark_hull(aes(x = x, y = y, fill = group_fast_greedy, label = group_fast_greedy)) +
   scale_size(range = c(5, 15)) +
   scale_edge_width(range = c(0.1, 1)) + 
   scale_color_manual(values = c("FDP" = "cornflowerblue",
                                 "Grüne" = "chartreuse2",
                                 "M" = "darkorange",
                                 "SP" = "brown1",
-                                "SVP" = "chartreuse4")) + 
-  guides(size = FALSE) + 
+                                "SVP" = "chartreuse4",
+                                "Parteilos" = "grey")) + 
   theme_graph() + 
-  labs(title = "Ständerätliches Netzwerk - Fruchtermannreingold",
-       subtitle = "Knotenattribute: Namen, Parteizugehörigkeit und Betweenness-Score\nKantenattribute: gemeinsame Einsitze/Mitgliedschaften",
+  labs(title = "Ständerätliches Netzwerk anhand privater Organisationszugehörigkeit - Fruchtermannreingold",
+       subtitle = "Knotenattribute: Namen, Parteizugehörigkeit und Betweenness-Score\nKantenattribute: gemeinsame Einsitze/Mitgliedschaften\nClustering: Fast & Greedy",
        color = "Partei",
-       caption = "Knoten mit einem Betweenness-Score < 5 wurden herausgefiltert")
+       caption = "Es werden lediglich Beziehung zwischen Mitgleider:innen unterschiedlicher Parteien visualisiert")
 ```
 

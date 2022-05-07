@@ -268,8 +268,8 @@ table(cutpoints_SR_reduced)
 set.seed(1234)
 gplot(network_SR_reduced,
       gmode = "graph",
-      vertex.col = cutpoints_SR_reduced+3,
-      vertex.border = cutpoints_SR_reduced+3,
+      vertex.col = cutpoints_SR_reduced + 3,
+      vertex.border = cutpoints_SR_reduced + 3,
       vertex.cex = 0.7,
       edge.col = "grey90",
       jitter = FALSE,
@@ -281,9 +281,70 @@ gplot(network_SR_reduced,
 ```
 
 
+## Bridges
 
+Um allfällige Bridges ermitteln zu können, wird die Funktion aus Luke 2015 (siehe Kapitel 7: S. 102f.) herangezogen.
 
+```{r}
+bridges <- function(dat, 
+                    mode = "graph",
+                    connected = c("strong", "weak")) {
+  
+  # edgecount
+  e_cnt <- network.edgecount(dat)
+  
+  if(mode == "graph") {
+    
+    # get number of components
+    cmp_cnt <- components(dat)
+    
+    b_vec <- rep(FALSE, e_cnt)
+    
+    for(i in 1:e_cnt) {
+      dat2 <- dat
+      delete.edges(dat2, i)
+      b_vec[i] <- (components(dat2) != cmp_cnt)
+      
+    }
+  }
+  
+  else {
+    cmp_cnt <- components(dat, 
+                          connected = connected)
+    
+    b_vec <- rep(FALSE, e_cnt)
+    for(i in 1:e_cnt) {
+      dat2 <- dat
+      delete.edges(dat2, i)
+      b_vec[i] <- (components(dat2,
+                              connected = connected) != cmp_cnt)
+    }
+  }
+  
+  return(b_vec)
+  
+}
 
+network_SR_reduced_bridges <- bridges(network_SR_reduced)
+
+# insgesamt wurden 8 Bridges gefunden
+table(network_SR_reduced_bridges)
+
+# Visualisierung
+set.seed(1234)
+gplot(network_SR_reduced,
+      gmode = "graph",
+      vertex.col = "grey90",
+      vertex.border = "grey90",
+      vertex.cex = 0.7,
+      edge.col = network_SR_reduced_bridges + 3,
+      jitter = FALSE,
+      displaylabels = TRUE,
+      label.cex = 0.7,
+      label.pos = 5,
+      main = "Bridges im reduzierten Netzwerk der Stände:rätinnen",
+      )
+```
 
 
 ## Cluster

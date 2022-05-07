@@ -104,6 +104,20 @@ for(i in 1:nrow(ties_SR)){
 
 ties_SR_reduced <- ties_SR[-non_interparty,]
 
+
+
+# erstellen eines Tibbles mit angepassten Datentypen
+ties_SR <- ties_SR %>% 
+  as_tibble() %>% 
+  mutate(from = as.numeric(from),
+         to = as.numeric(to))
+
+
+ties_SR_reduced <- ties_SR_reduced %>% 
+  as_tibble() %>% 
+  mutate(from = as.numeric(from),
+         to = as.numeric(to))
+
 # Knoten
 parlamentarier
 
@@ -116,9 +130,17 @@ ties_SR_reduced
 ```{r}
 # erstellen des Netzwerkobjekts (tidygraph)
 net_SR <- as_tbl_graph(ties_SR,
-                       directed = FALSE)
+                       directed = FALSE) %>% 
+  activate(nodes) %>% 
+  mutate(id = as.numeric(name)) %>% 
+  select(-name)
+
+
 net_SR_reduced <- as_tbl_graph(ties_SR_reduced,
-                       directed = FALSE)
+                       directed = FALSE)  %>% 
+  activate(nodes) %>% 
+  mutate(id = as.numeric(name)) %>% 
+  select(-name)
 
 ```
 
@@ -173,11 +195,9 @@ kable(measurements_df, caption = "Masszahlen der Netzwerke mit und ohne innerpar
 net_SR_reduced <- net_SR_reduced %>% 
   activate(nodes) %>%
   # Datentyp muss angepasst werden.
-  mutate(name = as.numeric(name)) %>% 
   left_join(parlamentarier,
-            by = c("name" = "id")) %>% 
-  rename("id" = "name",
-         "name" = "name.y")
+            by = c("id"))
+
 
 # Hinzufügen Zentralitätsmasse
 net_SR_reduced <- net_SR_reduced %>% 
@@ -199,6 +219,72 @@ masszahlen <- net_SR_reduced %>%
 # Tidy Print
 kable(masszahlen)
 ```
+
+## Identifizierung von Cutpoints
+
+Die Cutpoints werden mit dem statnet-Paket identifitiert. Dazu muss zuerst ein network-Objekt erstellt werden. Hierzu wird ein etwas umstädlicher Workaround eingesetzt.
+
+```{r}
+library(statnet)
+
+# erstellen temporärer Objekte zur Zwischenspeicherung
+
+temp_1 <- ties_SR_reduced %>% 
+  left_join(parlamentarier, by = c("from" = "id")) %>% 
+  select(name, weight) %>% 
+  rename("from"  = name)
+
+
+temp_2 <- ties_SR_reduced %>% 
+  left_join(parlamentarier, by = c("to" = "id")) %>% 
+  select(name) %>% 
+  rename("to"  = name)
+
+
+network_ties_SR_reduced <- cbind(temp_1, temp_2) %>% 
+  relocate(from, to, weight)
+
+
+# löschen der temporären Objekte
+rm(temp_1, temp_2)
+gc()
+
+# erstellen eines network-Objekts
+network_SR_reduced <- network(network_ties_SR_reduced, 
+                              type = "edgelist",
+                              directed = FALSE)
+
+
+# Identifizierung der Cutpoints
+cutpoints_SR_reduced <- cutpoints(network_SR_reduced,
+                                  # graph for undirected graphs
+                                  mode = "graph",
+                                  return.indicator = TRUE)
+
+# insegsamt wurden 9 Cutpoints gefunden
+table(cutpoints_SR_reduced)
+
+# Visualisierung
+set.seed(1234)
+gplot(network_SR_reduced,
+      gmode = "graph",
+      vertex.col = cutpoints_SR_reduced+3,
+      vertex.border = cutpoints_SR_reduced+3,
+      vertex.cex = 0.7,
+      edge.col = "grey90",
+      jitter = FALSE,
+      displaylabels = TRUE,
+      label.cex = 0.7,
+      label.pos = 5,
+      main = "Cutpoints im reduzierten Netzwerk der Stände:rätinnen",
+      )
+```
+
+
+
+
+
+
 
 ## Cluster
 

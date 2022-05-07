@@ -18,6 +18,8 @@ editor_options:
 ### Anhang R-Dokumente
 ## Datenbereinigung
 
+Die folgenden Visualisierungen basieren auf dem in der ersten zwei Heimarbeiten etablierten Ständeratsnetzwerk (siehe Keiser, Shehadeh & Bazzani Heimarbeit 1 & 2). Kurz zusammengefasst stellen die Knoten die einzelnen Ständerät:innen und die Kanten ihrerseits die gemeinsamen Mitgliedschaften in den jeweiligen Lobby-Organisationen dar. Alle Kanten des Graphen gelten dabei als ungerichtet, da wir davon ausgehen, dass sich die Personen jeweils gegenseitig kennen und wahrnehmen. Dieser Beziehung wird keine positive oder negative Konnotation zugewiesen. Die Kanten werden im Anschluss anhand der Anzahl gemeinsamer Einsitze gewichtet, wobei stärkere Verbindungen durch mehr gemeinsame Einsitze gekennzeichnet werden. In der letzten Arbeit haben wir und dafür entschieden, lediglich jene Knoten zu visualisieren, welche einen Betweenness-Score von mindestens fünf aufwiesen. Diese haben wir für die Visualisierungen der jetzigen Arbeit wieder entfernt. Dafür stellen wir nur noch Verbindungen zwischen Ständeräten dar, die nicht in der gleichen Partei tätig sind und vergleichen diese mit dem dichteren Netzwerk mitsamt innerparteilicher Edges.   
+
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(tidygraph)
@@ -123,6 +125,8 @@ net_SR_reduced <- as_tbl_graph(ties_SR_reduced,
 ## Masszahlen - gesamtes Netzwerk
 
 Vergleich zwischen dem dichteren Netzwerk mitsamt innerparteilicher Edges und jenem, welches nur ausserparteiliche Edges darstellt.
+
+Zuerst wurden die Masszahlen für Grösse, Dichte, Komponenten, Durchmesser und Clostering berechnet (Abb. 1). Beim Netzwerk handelt es sich jeweils um eine Komponente, auch wenn die innerparteilichen Edges wegfallen. Somit sehen wir, dass die Parlamentarier: innen überparteilich durch die Lobbyorganisationen miteinander verbunden sind. Die Dichte des Netzwerkes ist bei einem Score von 0.1022057 (ratiorange 0-1) eher gering Je näher zur 1 desto grösser wäre das Netzwerk miteinander verbunden (Luke 2015: 26). 
 
 ```{r}
 

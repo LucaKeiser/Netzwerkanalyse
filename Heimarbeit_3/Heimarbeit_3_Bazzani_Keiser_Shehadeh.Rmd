@@ -14,11 +14,19 @@ editor_options:
 ## Aufgabenblatt zur Heimarbeit 3
 ### Methoden der sozialen Netzwerkanalyse
 
+Die folgenden Visualisierungen basieren auf den Ständeratsnetzwerken, welche in ersten beiden Heimarbeiten erstellt wurden (siehe Keiser, Shehadeh & Bazzani Heimarbeit 1 & 2). Kurz zusammengefasst stellen die Knoten die einzelnen Ständerät:innen. Die Kanten beziehen sich auf die gemeinsamen Mitgliedschaften in den jeweiligen Lobby-Organisationen. Alle Kanten des Graphen gelten dabei als ungerichtet, da wir davon ausgehen, dass sich die Personen jeweils gegenseitig kennen und wahrnehmen. Dieser Beziehung wird keine positive oder negative Konnotation zugewiesen. In der letzten Arbeit haben wir und dafür entschieden, lediglich jene Knoten zu visualisieren, welche einen Betweenness-Score von mindestens fünf aufwiesen. Diese haben wir für die Visualisierungen der jetzigen Arbeit wieder entfernt. Dafür stellen wir nun Verbindungen zwischen Ständeräten dar, die nicht in der gleichen Partei tätig sind und vergleichen diese mit dem dichteren Netzwerk mit allen innerparteilicher Edges.	
 
-### Anhang R-Dokumente
-## Datenbereinigung
+Zuerst wurden die Masszahlen für Grösse, Dichte, Komponenten, Durchmesser und Clustering berechnet. Beim Netzwerk handelt es sich jeweils um ein Ein-Komponenten-Netzwerk, auch wenn die innerparteilichen Edges wegfallen. Somit sehen wir, dass die Parlamentarier:innen überparteilich durch die Lobbyorganisationen miteinander verbunden sind. Die Dichte des Netzwerkes mit oder ohne innerparteilichen Edges ist bei einem Score von 0.13 respektive 0.10 (Ratiorange 0 - 1) eher gering. Je näher zur 1 desto grösser wäre das Netzwerk miteinander verbunden (Luke 2015: 26). Der Durchmesser des Netzwerkes, also der größte Abstand zwischen zwei Scheitelpunkten beträgt ohne innerparteilichen Verbindungen 6. Die Grösse beläuft sich mit innerparteilichen Edges auf 118 und ohne innerparteiliche Verbindungen auf 88 (siehe Anhang Masszahlen 1).	
 
-Die folgenden Visualisierungen basieren auf den Ständeratsnetzwerken, welche in ersten beiden Heimarbeiten erstellt wurden (siehe Keiser, Shehadeh & Bazzani Heimarbeit 1 & 2). Kurz zusammengefasst stellen die Knoten die einzelnen Ständerät:innen. Die Kanten beziehen sich auf die gemeinsamen Mitgliedschaften in den jeweiligen Lobby-Organisationen. Alle Kanten des Graphen gelten dabei als ungerichtet, da wir davon ausgehen, dass sich die Personen jeweils gegenseitig kennen und wahrnehmen. Dieser Beziehung wird keine positive oder negative Konnotation zugewiesen. In der letzten Arbeit haben wir und dafür entschieden, lediglich jene Knoten zu visualisieren, welche einen Betweenness-Score von mindestens fünf aufwiesen. Diese haben wir für die Visualisierungen der jetzigen Arbeit wieder entfernt. Dafür stellen wir auch Verbindungen zwischen Ständeräten dar, die nicht in der gleichen Partei tätig sind und vergleichen diese mit dem dichteren Netzwerk mit allen innerparteilicher Edges.   
+Anschliessend wurden die Cutpoints mit dem statnet-Paket identifiziert. Cutpoints bezeichnen Knoten im Netzwerk, welche die Eigenschaft besitzen, dass sich die Komponentenzahl bei deren Wegfallen vergrössert. Im reduzierten Netzwerk der Ständerät:innen wurden insgesamt 9 Cutpoints gefunden (siehe Anhang Cutpoints).	
+Brücken die Verbindungslinien zwischen Subgruppen und stellen somit das Edge-Äquivalent zu den Cutpoints dar: Wenn diese Linie bzw. Brücke verschwindet, entstehen mindestens zwei einzelne Komponenten (Luke 2015: 102). Für das reduzierte Netzwerk der Stände:rätinnen konnte der Algorithmus von Luke (siehe Luke 2015: 102f.) insgesamt 8 Bridges identifizieren (siehe Anhang Bridges).	
+
+Der nächste Schritt war die Berechnung der Degrees, Closness und Betweenes (siehe Anhang Masszahlen 2). Wie bereits in der Heimarbeit 2 thematisiert (Keiser, Shehadeh & Bazzani, Heimarbeit 2). Dabei entschieden wir uns für die Färbung der Knotenpunkte, um die Parteizugehörigkeit der Parlamentarier: innen zu visualisieren. Darüber hinaus wird die Betweenness eines Knotens durch dessen Durchmesser dargestellt. Zusätzlich wird die Linienstärke der Kanten durch die standardisierte Gewichtung indiziert (Luke 2015: 68) : je dicker die Kanten, desto stärker ist die angenommene Beziehung durch Lobbyzugehörigkeit und Interessensbindungen zwischen den Ständerät:innen. Anhand der Darstellungen lassen sich "zentrale" Akteure innerhalb des Netzwerks identifizieren. Beispielsweise dürfte der hohe Betweenness-Score von Frau Brigitte Häberli-Koller einen Einfluss auf ihre Ressourcenausstattung besitzen (siehe Anhang Visualisierungen). Dabei gilt es zu beachten, dass die Betweenness lediglich eines von mehreren Zentralitätsmassen ist. Hier könnten alternative Zentralitätsmasse (Degree oder Closeness) als Referenz herangezogen werden.	
+
+Eine zentrale Aussage dieser Struktur des Netzwerkes ist, dass Vernetzungen zwischen einzelnen Parlamentarier:innen überparteilich über die Lobbygruppen entstehen können. Dies ist sicherlich dem Mehrparteiensystem der Schweiz geschuldet, wo die Interessen nicht klar auf zwei Parteien aufgeteilt werden können. Betrachten wir zwei eher unübliche Verbindungen (zum Beispiel zwischen Ständerat und Germann Hannes (SVP) und Daniel Jositsch (SP)) sehen wir, dass die Beziehungen zwischen Parlamenarier:innen auch aus überparteilichen Interessenverbindungen bestehen. Ergänzend gilt, dass Ständerät:innen eine spezielle Stellung innerhalb des Schweizer Systems inne haben. Ständerät:innen vertreten eher das Interesse der Kantone und nicht der Parteien, denn Sie werden nicht durch das Proporz-, sondern durch das Majorzwahl gewählt. Beim Netzwerk der Ständerät:innen kann man herauslesen, dass es sich um Interessen- und nicht um Parteienpolitik handelt.
+  
+
+## Anhang  - R-Code
 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -143,11 +151,7 @@ net_SR_reduced <- as_tbl_graph(ties_SR_reduced,
 
 ```
 
-## Masszahlen - gesamtes Netzwerk
-
-Vergleich zwischen dem dichteren Netzwerk mitsamt innerparteilicher Edges und jenem, welches nur ausserparteiliche Edges darstellt.
-
-Zuerst wurden die Masszahlen für Grösse, Dichte, Komponenten, Durchmesser und Clostering berechnet (Abb. 1). Beim Netzwerk handelt es sich jeweils um eine Komponente, auch wenn die innerparteilichen Edges wegfallen. Somit sehen wir, dass die Parlamentarier:innen überparteilich durch die Lobbyorganisationen miteinander verbunden sind. Die Dichte des Netzwerkes ist bei einem Score von 0.1022057 (ratiorange 0-1) eher gering. Je näher der Dichtewert bei 1 liegt, desto grösser ist die Netzwerkdichte und desto stärker sind die einzelnen Knoten miteinander verbunden (Luke 2015: 26). 
+## Masszahlen 1
 
 ```{r}
 
@@ -186,48 +190,13 @@ kable(measurements_df, caption = "Masszahlen der Netzwerke mit und ohne innerpar
 
 ```
 
-## Masszahlen - Zentralitätsmasse Nodes
-### Anhand des Netzwerks ohne innerparteilicher Beziehungen
-
-
-
-```{r message=FALSE, warning=FALSE}
-# hinzufügen der Knotenattribute
-net_SR_reduced <- net_SR_reduced %>% 
-  activate(nodes) %>%
-  # Datentyp muss angepasst werden.
-  left_join(parlamentarier,
-            by = c("id"))
-
-
-# Hinzufügen Zentralitätsmasse
-net_SR_reduced <- net_SR_reduced %>% 
-  activate(nodes) %>% 
-  # Berechnung und standardisierung([0,1]) der Betweenness
-  mutate(degree = centrality_degree(),
-         betweenness = centrality_betweenness(),
-         closeness = centrality_closeness())
-
-# Extrahierung der relevanten Zeilen
-masszahlen <- net_SR_reduced %>% 
-  select(name,
-         parlamentarier_partei,
-         degree,
-         betweenness,
-         closeness) %>% 
-  arrange(desc(degree))
-
-# Tidy Print
-kable(masszahlen)
-```
 
 ## Identifizierung von Cutpoints
-
-Die Cutpoints werden mit dem statnet-Paket identifitiert. Dazu muss zuerst ein network-Objekt erstellt werden. Hierzu wird ein etwas umstädlicher Workaround eingesetzt.
 
 ```{r}
 library(statnet)
 
+# Workaround
 # erstellen temporärer Objekte zur Zwischenspeicherung
 
 temp_1 <- ties_SR_reduced %>% 
@@ -269,13 +238,14 @@ table(cutpoints_SR_reduced)
 set.seed(1234)
 gplot(network_SR_reduced,
       gmode = "graph",
+      mode = "fruchtermanreingold",
       vertex.col = cutpoints_SR_reduced + 3,
       vertex.border = cutpoints_SR_reduced + 3,
-      vertex.cex = 0.7,
+      vertex.cex = 1.5,
       edge.col = "grey90",
       jitter = FALSE,
       displaylabels = TRUE,
-      label.cex = 0.7,
+      label.cex = 1.5,
       label.pos = 5,
       main = "Cutpoints im reduzierten Netzwerk der Stände:rätinnen",
       )
@@ -283,8 +253,6 @@ gplot(network_SR_reduced,
 
 
 ## Bridges
-
-Um allfällige Bridges ermitteln zu können, wird die Funktion aus Luke 2015 (siehe Kapitel 7: S. 102f.) herangezogen.
 
 ```{r}
 bridges <- function(dat, 
@@ -334,18 +302,53 @@ table(network_SR_reduced_bridges)
 # Visualisierung
 set.seed(1234)
 gplot(network_SR_reduced,
+      mode = "fruchtermanreingold",
       gmode = "graph",
       vertex.col = "grey90",
       vertex.border = "grey90",
-      vertex.cex = 0.7,
+      vertex.cex = 1.5,
       edge.col = network_SR_reduced_bridges + 3,
       jitter = FALSE,
       displaylabels = TRUE,
-      label.cex = 0.7,
+      label.cex = 1.5,
       label.pos = 5,
       main = "Bridges im reduzierten Netzwerk der Stände:rätinnen",
       )
 ```
+
+
+## Masszahlen 2
+
+```{r message=FALSE, warning=FALSE}
+# hinzufügen der Knotenattribute
+net_SR_reduced <- net_SR_reduced %>% 
+  activate(nodes) %>%
+  # Datentyp muss angepasst werden.
+  left_join(parlamentarier,
+            by = c("id"))
+
+
+# Hinzufügen Zentralitätsmasse
+net_SR_reduced <- net_SR_reduced %>% 
+  activate(nodes) %>% 
+  # Berechnung und standardisierung([0,1]) der Betweenness
+  mutate(degree = centrality_degree(),
+         betweenness = centrality_betweenness(),
+         closeness = centrality_closeness())
+
+# Extrahierung der relevanten Zeilen
+masszahlen <- net_SR_reduced %>% 
+  select(name,
+         parlamentarier_partei,
+         degree,
+         betweenness,
+         closeness) %>% 
+  arrange(desc(degree))
+
+# Tidy Print
+kable(masszahlen)
+```
+
 
 
 ## Cluster
@@ -372,8 +375,7 @@ kable(cluster)
 
 ```
 
-## Visualisierungen
-### Netzwerkdarstellung mit Knoten- und Kantenattributen
+## Visualisierung
 
 ```{r message=FALSE, warning=FALSE}
 # Beachten: Um die Cluster darstellen zu können, muss das concaveman-Paket installiert werden

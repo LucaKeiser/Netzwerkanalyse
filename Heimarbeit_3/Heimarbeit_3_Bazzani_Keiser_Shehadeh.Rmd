@@ -18,7 +18,7 @@ editor_options:
 ### Anhang R-Dokumente
 ## Datenbereinigung
 
-Die folgenden Visualisierungen basieren auf den Ständeratsnetzwerken, welche in ersten beiden Heimarbeiten erstellt wurden (siehe Keiser, Shehadeh & Bazzani Heimarbeit 1 & 2). Kurz zusammengefasst stellen die Knoten die einzelnen Ständerät:innen. Die Kanten beziehen sich auf die gemeinsamen Mitgliedschaften in den jeweiligen Lobby-Organisationen. Alle Kanten des Graphen gelten dabei als ungerichtet, da wir davon ausgehen, dass sich die Personen jeweils gegenseitig kennen und wahrnehmen. Dieser Beziehung wird keine positive oder negative Konnotation zugewiesen. Die Kanten werden im Anschluss anhand der Anzahl gemeinsamer Einsitze gewichtet, wobei stärkere Verbindungen durch mehr gemeinsame Einsitze gekennzeichnet werden. In der letzten Arbeit haben wir und dafür entschieden, lediglich jene Knoten zu visualisieren, welche einen Betweenness-Score von mindestens fünf aufwiesen. Diese haben wir für die Visualisierungen der jetzigen Arbeit wieder entfernt. Dafür stellen wir nur noch Verbindungen zwischen Ständeräten dar, die nicht in der gleichen Partei tätig sind und vergleichen diese mit dem dichteren Netzwerk mit allen innerparteilicher Edges.   
+Die folgenden Visualisierungen basieren auf den Ständeratsnetzwerken, welche in ersten beiden Heimarbeiten erstellt wurden (siehe Keiser, Shehadeh & Bazzani Heimarbeit 1 & 2). Kurz zusammengefasst stellen die Knoten die einzelnen Ständerät:innen. Die Kanten beziehen sich auf die gemeinsamen Mitgliedschaften in den jeweiligen Lobby-Organisationen. Alle Kanten des Graphen gelten dabei als ungerichtet, da wir davon ausgehen, dass sich die Personen jeweils gegenseitig kennen und wahrnehmen. Dieser Beziehung wird keine positive oder negative Konnotation zugewiesen. In der letzten Arbeit haben wir und dafür entschieden, lediglich jene Knoten zu visualisieren, welche einen Betweenness-Score von mindestens fünf aufwiesen. Diese haben wir für die Visualisierungen der jetzigen Arbeit wieder entfernt. Dafür stellen wir auch Verbindungen zwischen Ständeräten dar, die nicht in der gleichen Partei tätig sind und vergleichen diese mit dem dichteren Netzwerk mit allen innerparteilicher Edges.   
 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -29,7 +29,6 @@ library(janitor)
 library(data.table)
 library(knitr)
 library(ggforce)
-
 
 # Einlesen des Datensatzes
 doc <- read_delim(here::here("Data", "Lobbywatch", "cartesian_minimal_parlamentarier_interessenbindung.csv"))
@@ -189,6 +188,8 @@ kable(measurements_df, caption = "Masszahlen der Netzwerke mit und ohne innerpar
 
 ## Masszahlen - Zentralitätsmasse Nodes
 ### Anhand des Netzwerks ohne innerparteilicher Beziehungen
+
+
 
 ```{r message=FALSE, warning=FALSE}
 # hinzufügen der Knotenattribute

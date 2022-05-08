@@ -350,6 +350,10 @@ gplot(network_SR_reduced,
 
 ## Cluster
 
+Wur haben insgesamt drei Clustering-Algorithmen für die Analyse angewendet, namentlich Edge-Betweenness, Infomap und Fast & Greedy. Letztere haben jeweils sechs unterschiedliche Cluster identifiziert, welche sich aber nur marginal überschneiden. Insgesamt scheinen die Cluster keine sinnvolle Einteilungen oder latente Muster identifiziert zu haben.
+
+Im Anschluss werden Infomap sowie Fast & Greedy noch visualisiert.
+
 ```{r}
 
 # Erstellen mehrerer Clusterings anhand dreier Algorithmen:
@@ -374,6 +378,7 @@ kable(cluster)
 
 ## Visualisierungen
 ### Netzwerkdarstellung mit Knoten- und Kantenattributen
+### 1. Fast & Greedy
 
 ```{r message=FALSE, warning=FALSE}
 # Beachten: Um die Cluster darstellen zu können, muss das concaveman-Paket installiert werden
@@ -408,3 +413,37 @@ net_SR_reduced %>%
        caption = "Es werden lediglich Beziehung zwischen Mitgleider:innen unterschiedlicher Parteien visualisiert")
 ```
 
+### 2. Infomap
+
+```{r message=FALSE, warning=FALSE}
+# Beachten: Um die Cluster darstellen zu können, muss das concaveman-Paket installiert werden
+# install.packages("concaveman")
+
+# Hinzufügen der Kantenattribute
+set.seed(1245)
+
+net_SR_reduced %>% 
+  activate(nodes) %>% 
+  mutate(group_infomap = as.factor(group_infomap())) %>% 
+  ggraph(layout = "fr") + 
+  geom_node_point(aes(color = parlamentarier_partei,
+                      size = betweenness)) + 
+  geom_node_text(aes(label = name),
+                 repel = TRUE) +
+  geom_edge_link(aes(width = weight),
+                 show.legend = FALSE) +
+  geom_mark_hull(aes(x = x, y = y, fill = group_infomap, label = group_infomap)) +
+  scale_size(range = c(5, 15)) +
+  scale_edge_width(range = c(0.1, 1)) + 
+  scale_color_manual(values = c("FDP" = "cornflowerblue",
+                                "Grüne" = "chartreuse2",
+                                "M" = "darkorange",
+                                "SP" = "brown1",
+                                "SVP" = "chartreuse4",
+                                "Parteilos" = "grey")) + 
+  theme_graph() + 
+  labs(title = "Ständerätliches Netzwerk anhand privater Organisationszugehörigkeit - Fruchtermannreingold",
+       subtitle = "Knotenattribute: Namen, Parteizugehörigkeit und Betweenness-Score\nKantenattribute: gemeinsame Einsitze/Mitgliedschaften\nClustering: Infomap",
+       color = "Partei",
+       caption = "Es werden lediglich Beziehung zwischen Mitgleider:innen unterschiedlicher Parteien visualisiert")
+```

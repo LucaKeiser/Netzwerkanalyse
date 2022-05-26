@@ -1,5 +1,5 @@
 ---
-title: "Aufgabenblatt zur Heimarbeit 2"
+title: "Aufgabenblatt zur Heimarbeit 3"
 author: "Mirco Bazzani, Luca Keiser & Amir Shehadeh"
 subtitle: 'Seminar: Methoden der sozialen Netzwerkanalyse'
 output:

@@ -1,0 +1,293 @@
+---
+title: "Aufgabenblatt zur Heimarbeit 4"
+author: "Luca"
+date: '2022-05-26'
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## Aufgabenblatt zur Heimarbeit 4
+### Methoden der sozialen Netzwerkanalyse
+
+
+
+## Anhang  - R-Code
+
+```{r}
+# Pakete laden
+library(tidyverse)
+library(tidygraph)
+library(ggraph)
+library(igraph)
+
+theme_set(theme_light())
+
+
+# Einsatz meherer Prozessoren
+doParallel::registerDoParallel(cores = 4)
+
+
+# Datensatz laden
+doc <- read_delim(here::here("Data", "Lobbywatch", "cartesian_minimal_parlamentarier_interessenbindung.csv"),
+                  delim = "\t")
+
+doc_SR <- doc %>% 
+  filter(parlamentarier_rat == "SR") %>% 
+  filter(organisation_rechtsform != "Parlamentarische Gruppe")
+```
+
+
+## Bipartites Netzwerk
+
+```{r}
+# Erstellen eines bipartiten Netzwerks anhand der Edgelist
+
+# Edgelist (Parlamentarier:in und Organisation (Event))
+edgelist <- doc_SR %>% 
+  select(parlamentarier_name, organisation_name)
+
+
+
+# ansehen
+edgelist
+
+edgelist %>% 
+  count(parlamentarier_name,
+        sort = TRUE)
+
+edgelist %>% count(organisation_name, 
+                   sort = TRUE)
+
+
+# Bipartites Netzwerk
+SR_bipartite_igraph <- graph.data.frame(edgelist,
+                                        directed = TRUE)
+
+
+# Noch nicht ganz...
+SR_bipartite_igraph
+list.vertex.attributes(SR_bipartite_igraph)
+
+# Die Konten müssen noch differenziert werden (Parlamentarier:innen vs. Organisationen)
+V(SR_bipartite_igraph)$name
+edgelist[,1]
+edgelist[,2]
+
+
+V(SR_bipartite_igraph)$type <- V(SR_bipartite_igraph)$name %in% edgelist[,1]$parlamentarier_name
+
+
+# Jetzt sieht es gut aus!
+SR_bipartite_igraph
+list.vertex.attributes(SR_bipartite_igraph)
+
+# 45 Parlamentarier:innen und 636 Organisationen
+table(get.vertex.attribute(SR_bipartite_igraph)$type)
+```
+
+
+## Knotenattribute
+
+```{r}
+# Hinzufügen weiterer Knotenattribute mit tidygraph
+SR_bipartite_tidy <- as_tbl_graph(SR_bipartite_igraph)
+
+# Definieren der Knotenattribute
+
+# 1) Parlamentaier:innen
+node_attributes_parl <- doc_SR %>% 
+  select(parlamentarier_name, parlamentarier_geschlecht, parlamentarier_partei, parlamentarier_kanton) %>% 
+  distinct()
+
+# 2) Organisationen
+node_attributes_org <- doc_SR %>% 
+  select(organisation_name, organisation_ort, organisation_interessengruppe1, organisation_interessengruppe1_branche) %>% 
+  distinct()
+
+# Hinzufügen
+SR_bipartite_tidy <- SR_bipartite_tidy %>% 
+  
+  # Knotenattribute (Parlamentarier)
+  left_join(node_attributes_parl, 
+            by = c("name" = "parlamentarier_name")) %>% 
+  # Korrektur für Thomas Minder (Parteilos)
+  mutate(parlamentarier_partei = ifelse(name == "Minder, Thomas", "Parleilos", parlamentarier_partei)) %>% 
+  
+  # Knotenattribute (Organisationen)
+  left_join(node_attributes_org,
+            by = c("name" = "organisation_name")) %>% 
+  rename(sex = parlamentarier_geschlecht,
+         party = parlamentarier_partei,
+         canton = parlamentarier_kanton,
+         location_org = organisation_ort,
+         interest_org = organisation_interessengruppe1,
+         industry_org = organisation_interessengruppe1_branche)
+
+
+# aktualisieren des igraph-objekts
+SR_bipartite_igraph <- as.igraph(SR_bipartite_tidy)
+
+list.vertex.attributes(SR_bipartite_igraph)
+
+# ansehen
+SR_bipartite_tidy %>% 
+  activate(nodes) %>% 
+  as_tibble() %>% 
+  group_by(type) %>% 
+  slice_head(n = 10) 
+
+
+tibble(
+  name = V(SR_bipartite_igraph)$name,
+  type = V(SR_bipartite_igraph)$type,
+  sex = V(SR_bipartite_igraph)$sex,
+  party = V(SR_bipartite_igraph)$party,
+  canton = V(SR_bipartite_igraph)$canton,
+  place = V(SR_bipartite_igraph)$location_org,
+  interest = V(SR_bipartite_igraph)$interest_org,
+  branche = V(SR_bipartite_igraph)$industry_org
+) %>% 
+  group_by(type) %>% 
+  slice_head(n = 10)
+```
+
+
+## Grafiken
+
+
+### Bipartites Netzwerk
+
+```{r}
+set.seed(12345)
+SR_bipartite_tidy %>% 
+  ggraph(layout = "fr") +
+  geom_edge_link(color = "grey") + 
+  geom_node_point(aes(shape = type,
+                      color = type),
+                  size = 5,
+                  show.legend = FALSE) +
+  geom_node_text(aes(label = name),
+                 size = 2,
+                 check_overlap = TRUE) + 
+  labs(title = "Bipartites Netzwerk - Parlamentarier:innen und Organisationen",
+       caption = "Aus Platzgründen werden nicht alle Namen angezeigt.")
+```
+
+
+
+### Projektionen
+
+```{r}
+# Projektionen
+SR_projection <- bipartite.projection(SR_bipartite_igraph)
+SR_projection
+
+# 1) Organisationen
+SR_organisationen_igraph <- SR_projection$proj1
+
+# 2) Parlamentarier:innen
+SR_parlamentarier_igraph <- SR_projection$proj2
+
+
+# Gewichtung
+get.adjacency(SR_organisationen_igraph,
+              sparse = FALSE,
+              attr = "weight")
+
+get.adjacency(SR_parlamentarier_igraph,
+              sparse = FALSE,
+              attr = "weight")
+
+
+# ansehen
+# sehr spärlich...
+table(E(SR_organisationen_igraph)$weight)
+table(E(SR_parlamentarier_igraph)$weight)
+
+
+# Grafiken werden mit tidygraph erstellt
+SR_organisationen_tidy <- as_tbl_graph(SR_organisationen_igraph) %>% 
+  mutate(degree = centrality_degree(),
+         betweenness = centrality_betweenness(),
+         closeness = centrality_closeness())
+SR_parlamentarier_tidy <- as_tbl_graph(SR_parlamentarier_igraph) %>% 
+  mutate(degree = centrality_degree(),
+         betweenness = centrality_betweenness(),
+         closeness = centrality_closeness())
+```
+
+
+```{r}
+# Organisationsnetzwerk ist viel zu gross...
+# Kann anhand meherer Kriterien gefiltert werden (Ort, Branche, Zentralitätsmasse etc.)
+# Hier werden Kanten entfernt, welche eine Gewichtung <= 1 aufweisen. Das heisst, es werden nur 
+# Organisationen berücksichtigt, welche sich mehr als 1 Parlamentarier:in "teilen"
+
+# in einem ersten Schritt muss dazu ein Filterungsindex erstellt werden
+index_org <- SR_organisationen_tidy %>%
+  activate(edges) %>% 
+  filter(weight > 1) %>% 
+  as_tibble() %>% 
+  select(from, to)
+
+index_org <- c(index_org$from, index_org$to) %>% 
+  unique()
+
+set.seed(12345)
+SR_organisationen_tidy %>%
+  activate(edges) %>% 
+  filter(weight > 1) %>% 
+  activate(nodes) %>% 
+  slice(index_org) %>% 
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(width = weight),
+                 alpha = 0.5,
+                 show.legend = FALSE) +
+  geom_node_point(aes(color = industry_org,
+                      size  = degree)) +
+  geom_node_text(aes(label = name),
+                 repel = TRUE,
+                 size = 3) +
+  scale_edge_width(range = c(0.2, 0.8)) +
+  scale_size(range = c(1, 6)) + 
+  labs(title = "Organisationsnetzwerk - Geteilte Parlamentarier:innen",
+       subtitle = "Je breiter die Kanten, desto mehr Parlamentarier:innen 'teilen' sich die Organisationen",
+       size = "Degree",
+       color = "Branche",
+       caption = "Organisationen mit einer Gewichtung von <= 1 wurden herausgefiltert.")
+```
+
+
+```{r}
+# Parlamentarier:innen
+set.seed(12345)
+SR_parlamentarier_tidy %>% 
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(width = weight),
+                 color = "grey",
+                 show.legend = FALSE) + 
+  geom_node_point(aes(color = party,
+                      size = degree)) +
+  geom_node_text(aes(label = name),
+                 size = 4,
+                 repel = TRUE) + 
+  scale_color_manual(values = c("FDP" = "cornflowerblue", 
+                                "Grüne" = "chartreuse2", 
+                                "M" = "darkorange", 
+                                "SP" = "brown1", 
+                                "SVP" = "chartreuse4", 
+                                "Parteilos" = "grey")) + 
+  scale_edge_width(range = c(0.5, 1)) + 
+  scale_size(range = c(4, 10)) + 
+  labs(title = "Ständerätliches Netzwerk - Gemeinsame Einsitze in Organisationen",
+       subtitle = "Je breiter die Kanten, desto mehr Organisationen 'teilen' sich die Parlamentarier:innen",
+       size = "Degree",
+       color = "Partei")
+```
+
+
+
+
+
+

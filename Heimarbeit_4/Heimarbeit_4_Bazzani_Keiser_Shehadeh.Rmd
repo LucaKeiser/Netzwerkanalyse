@@ -20,6 +20,8 @@ library(tidyverse)
 library(tidygraph)
 library(ggraph)
 library(igraph)
+library(knitr)
+library(ggforce)
 
 theme_set(theme_light())
 
@@ -288,6 +290,159 @@ SR_parlamentarier_tidy %>%
 
 
 
+# Community Detection
 
+## Communities: Parlamentarier:innen
+
+```{r}
+
+## Auswahl des Algorithmus mit der besten Modularität für das Parlamentarier:innen-Netzwerk
+
+# Fast & Greedy
+fg_p <- modularity(
+  cluster_fast_greedy(SR_parlamentarier_tidy)
+  )
+
+# Infomap
+in_p <- modularity(
+  cluster_infomap(SR_parlamentarier_tidy)
+  )
+
+# Edge Betweenness
+eb_p <- modularity(
+  cluster_edge_betweenness(SR_parlamentarier_tidy)
+  )
+
+# Optimal
+op_p <- modularity(
+  cluster_optimal(SR_parlamentarier_tidy)
+  )
+
+
+## Dataframe
+Algorithm <- c("Fast & Greedy",
+               "Infomap",
+               "Edge Betweenness",
+               "Optimal")
+
+Modularity <- c(fg_p,
+                in_p,
+                eb_p,
+                op_p)
+
+kable(data.frame(Algorithm,Modularity))
+```
+
+
+```{r}
+# Parlamentarier:innen - Community
+set.seed(12345)
+SR_parlamentarier_tidy %>% 
+  mutate(group_infomap = as.factor(group_infomap())) %>% 
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(width = weight),
+                 color = "grey",
+                 show.legend = FALSE) + 
+  geom_node_point(aes(color = party,
+                      size = degree)) +
+  geom_node_text(aes(label = name),
+                 size = 4,
+                 repel = TRUE) + 
+  geom_mark_hull(aes(x = x, 
+                     y = y, 
+                     fill = group_infomap, 
+                     label = group_infomap),
+                 concavity = 6)
+  scale_color_manual(values = c("FDP" = "cornflowerblue", 
+                                "Grüne" = "chartreuse2", 
+                                "M" = "darkorange", 
+                                "SP" = "brown1", 
+                                "SVP" = "chartreuse4", 
+                                "Parteilos" = "grey")) + 
+  scale_edge_width(range = c(0.5, 1)) + 
+  scale_size(range = c(4, 10)) + 
+  labs(title = "Ständerätliches Netzwerk - Gemeinsame Einsitze in Organisationen",
+       subtitle = "Je breiter die Kanten, desto mehr Organisationen 'teilen' sich die Parlamentarier:innen",
+       size = "Degree",
+       color = "Partei")
+```
+
+## Communities: Parlamentarier:innen
+
+```{r}
+
+## Auswahl des Algorithmus mit der besten Modularität für das Parlamentarier:innen-Netzwerk
+
+# Fast & Greedy
+fg_o <- modularity(
+  cluster_fast_greedy(SR_organisationen_tidy %>%
+  activate(edges) %>% 
+  filter(weight > 1))
+  )
+
+# Infomap
+in_o <- modularity(
+  cluster_infomap(SR_organisationen_tidy %>%
+  activate(edges) %>% 
+  filter(weight > 1))
+  )
+
+# Edge Betweenness
+eb_o <- modularity(
+  cluster_edge_betweenness(SR_organisationen_tidy %>%
+  activate(edges) %>% 
+  filter(weight > 1))
+  )
+
+# Optimal
+op_o <- modularity(
+  cluster_optimal(SR_organisationen_tidy %>%
+  activate(edges) %>% 
+  filter(weight > 1))
+  )
+
+
+## Dataframe
+Algorithm <- c("Fast & Greedy",
+               "Infomap",
+               "Edge Betweenness",
+               "Optimal")
+
+Modularity <- c(fg_o,
+                in_o,
+                eb_o,
+                op_o)
+
+kable(data.frame(Algorithm,Modularity),
+      caption = "Modularity Scores des Organisationsnetzwerks basierend auf verschiedenen Community-Algorithmen")
+```
+
+
+```{r}
+# Organisationen - Community
+set.seed(12345)
+
+SR_organisationen_tidy %>%
+  activate(edges) %>% 
+  filter(weight > 1) %>% 
+  activate(nodes) %>% 
+  slice(index_org) %>% 
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(width = weight),
+                 alpha = 0.5,
+                 show.legend = FALSE) +
+  geom_node_point(aes(color = industry_org,
+                      size  = degree)) +
+  geom_node_text(aes(label = name),
+                 repel = TRUE,
+                 size = 3) +
+  scale_edge_width(range = c(0.2, 0.8)) +
+  scale_size(range = c(1, 6)) + 
+  labs(title = "Organisationsnetzwerk - Geteilte Parlamentarier:innen",
+       subtitle = "Je breiter die Kanten, desto mehr Parlamentarier:innen 'teilen' sich die Organisationen",
+       size = "Degree",
+       color = "Branche",
+       caption = "Organisationen mit einer Gewichtung von <= 1 wurden herausgefiltert.")
+```
 
 

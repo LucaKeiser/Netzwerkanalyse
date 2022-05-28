@@ -292,9 +292,13 @@ SR_parlamentarier_tidy %>%
 
 # Community Detection
 
+In der Netzwerksoziologie wird eine Comminity als Subste der Nodes mit einer höhrene Kantendichte als der Rest des Netzwerkes definiert (Vergleich Radichhi et. al 2004). Um diese Subsets zu identifizieren wird eine Auswahl an Algorithmen verwendet, wie sie auch von Douglas A. Luke in seiner User's Guide to Network Analysis vorgeschlagen werden.
+
+Die Interpretation der identifizierten Communities bleibt dabei in den Händen der Forschenden und die Algorithmen machen tätigen jeweils keine qualitätive Einordnung der identifizierten Subsets.
+
 ## Communities: Parlamentarier:innen
 
-Die Community Detection wird sowohl auf die Parlamentarier:innen als auch das Organisationsnetzwerk angewendet. Basierend auf Douglas A. Lukes Methode (siehe Luke 2015: 118) versuchen wir in einem ersten Schritt den Algorithmus zu finden, welcher den höchsten Modularitätswert vorweist. 
+Die Community Detection wird sowohl auf die Parlamentarier:innen als auch das Organisationsnetzwerk angewendet. Basierend auf Douglas A. Lukes Methode (vgl. Luke 2015: 118) versuchen wir in einem ersten Schritt den Algorithmus zu finden, welcher den höchsten Modularitätswert vorweist. 
 
 Im Falle der Parlamentarier:innen wäre dies *Louvian*.
 
@@ -340,7 +344,7 @@ kable(data.frame(Algorithm,Modularity),
 
 Wendet man den Algorithmus auf das Netzwerk an, so werden insgesamt sieben verschiedene Communities identifiziert. Zwei dieser sieben lasssen sich dadurch erklären, dass sie atomisierte und innerhalb des Netzwerkes nicht verbundene Politiker:innen darstellen (Community 6 und 7).
 
-Communities 1 und zwei weisen eine starke Überschneidung auf und hier sind keine klaren Parteimuster zu erkennen. Gerade in Community 2 sind die Parteien mit vier Grünen und jeweils drei Politiker:innen der SP und SVP relativ ausgeglichen. 
+Communities eins und zwei weisen eine starke Überschneidung auf und hier sind keine klaren Parteimuster zu erkennen. Gerade in Community 2 sind die Parteien mit vier Grünen und jeweils drei Politiker:innen der SP und SVP relativ ausgeglichen. 
 
 Spannender wird die identifizierte Community 3, welche aussschliesslich aus FDP und Mitte-Politiker:innen besteht und somit ein klares mitte-rechts-Bias besitzt.
 
@@ -489,3 +493,6 @@ kable(as.data.frame(Communities, Kategorie),
       caption = "Tabelle 3: Interpretation der Communities im organisationalen Netzwerk")
 ```
 
+# Weiterführende Literatur
+
+Radicchi,Filippo; Claudio Castellano; Federico Cecconi; Vittorio Loreto; Domenico Parisi (2004): Defining and identifying communities in networks, Proceedings of the National Academy of Sciences, Volume 101, doi:10.1073/pnas.0400054101

@@ -294,6 +294,10 @@ SR_parlamentarier_tidy %>%
 
 ## Communities: Parlamentarier:innen
 
+Die Community Detection wird sowohl auf die Parlamentarier:innen als auch das Organisationsnetzwerk angewendet. Basierend auf Douglas A. Lukes Methode (siehe Luke 2015: 118) versuchen wir in einem ersten Schritt den Algorithmus zu finden, welcher den höchsten Modularitätswert vorweist. 
+
+Im Falle der Parlamentarier:innen wäre dies *Louvian*.
+
 ```{r}
 
 ## Auswahl des Algorithmus mit der besten Modularität für das Parlamentarier:innen-Netzwerk
@@ -313,9 +317,9 @@ eb_p <- modularity(
   cluster_edge_betweenness(SR_parlamentarier_tidy)
   )
 
-# Optimal
-op_p <- modularity(
-  cluster_optimal(SR_parlamentarier_tidy)
+# Louvian
+lv_p <- modularity(
+  cluster_louvain(SR_parlamentarier_tidy)
   )
 
 
@@ -323,22 +327,29 @@ op_p <- modularity(
 Algorithm <- c("Fast & Greedy",
                "Infomap",
                "Edge Betweenness",
-               "Optimal")
+               "Louvian")
 
 Modularity <- c(fg_p,
                 in_p,
                 eb_p,
-                op_p)
+                lv_p )
 
-kable(data.frame(Algorithm,Modularity))
+kable(data.frame(Algorithm,Modularity),
+      caption = "Tabelle 1: Modularity Scores des Parlamentarier:innen-Netzwerks basierend auf verschiedenen Community-Algorithmen")
 ```
+
+Wendet man den Algorithmus auf das Netzwerk an, so werden insgesamt sieben verschiedene Communities identifiziert. Zwei dieser sieben lasssen sich dadurch erklären, dass sie atomisierte und innerhalb des Netzwerkes nicht verbundene Politiker:innen darstellen (Community 6 und 7).
+
+Communities 1 und zwei weisen eine starke Überschneidung auf und hier sind keine klaren Parteimuster zu erkennen. Gerade in Community 2 sind die Parteien mit vier Grünen und jeweils drei Politiker:innen der SP und SVP relativ ausgeglichen. 
+
+Spannender wird die identifizierte Community 3, welche aussschliesslich aus FDP und Mitte-Politiker:innen besteht und somit ein klares mitte-rechts-Bias besitzt.
 
 
 ```{r}
 # Parlamentarier:innen - Community
 set.seed(12345)
 SR_parlamentarier_tidy %>% 
-  mutate(group_infomap = as.factor(group_infomap())) %>% 
+  mutate(group_louvain= as.factor(group_louvain())) %>% 
   ggraph(layout = "fr") +
   geom_edge_link(aes(width = weight),
                  color = "grey",
@@ -350,9 +361,9 @@ SR_parlamentarier_tidy %>%
                  repel = TRUE) + 
   geom_mark_hull(aes(x = x, 
                      y = y, 
-                     fill = group_infomap, 
-                     label = group_infomap),
-                 concavity = 6)
+                     fill = group_louvain, 
+                     label = group_louvain),
+                 concavity = 6) +
   scale_color_manual(values = c("FDP" = "cornflowerblue", 
                                 "Grüne" = "chartreuse2", 
                                 "M" = "darkorange", 
@@ -361,72 +372,74 @@ SR_parlamentarier_tidy %>%
                                 "Parteilos" = "grey")) + 
   scale_edge_width(range = c(0.5, 1)) + 
   scale_size(range = c(4, 10)) + 
-  labs(title = "Ständerätliches Netzwerk - Gemeinsame Einsitze in Organisationen",
-       subtitle = "Je breiter die Kanten, desto mehr Organisationen 'teilen' sich die Parlamentarier:innen",
+  labs(title = "Ständerätliches Netzwerk - Gemeinsame Einsitze in Organisationen | Communities",
+       subtitle = "Communities anhand Algorithmus Louvian ausgearbeitet",
        size = "Degree",
        color = "Partei")
 ```
 
-## Communities: Parlamentarier:innen
+## Communities: Organisationen
+
+Wesentlich spannender und eindeutiger gestaltet sich die Community Detection bei den Organisationen. Alle verwendeten Algorithmen kommen hier auf ähnliche Modularitätswert. Der Einfachheit und Vergleichbarkeit halber wurde auch hier der *Louvian*-Algorithmus weitervwerendet.
 
 ```{r}
 
 ## Auswahl des Algorithmus mit der besten Modularität für das Parlamentarier:innen-Netzwerk
+SR_organisationen_tidy_com <- SR_organisationen_tidy %>%
+  activate(edges) %>% 
+  filter(weight > 1)
 
 # Fast & Greedy
 fg_o <- modularity(
-  cluster_fast_greedy(SR_organisationen_tidy %>%
-  activate(edges) %>% 
-  filter(weight > 1))
+  cluster_fast_greedy(SR_organisationen_tidy_com)
   )
 
 # Infomap
 in_o <- modularity(
-  cluster_infomap(SR_organisationen_tidy %>%
-  activate(edges) %>% 
-  filter(weight > 1))
+  cluster_infomap(SR_organisationen_tidy_com)
   )
 
 # Edge Betweenness
 eb_o <- modularity(
-  cluster_edge_betweenness(SR_organisationen_tidy %>%
-  activate(edges) %>% 
-  filter(weight > 1))
+  cluster_edge_betweenness(SR_organisationen_tidy_com)
   )
 
-# Optimal
-op_o <- modularity(
-  cluster_optimal(SR_organisationen_tidy %>%
-  activate(edges) %>% 
-  filter(weight > 1))
-  )
 
+# Louvian
+lv_o <- modularity(
+  cluster_louvain(SR_organisationen_tidy_com)
+  )
 
 ## Dataframe
 Algorithm <- c("Fast & Greedy",
                "Infomap",
                "Edge Betweenness",
-               "Optimal")
+               "Louvian")
 
 Modularity <- c(fg_o,
                 in_o,
                 eb_o,
-                op_o)
+                lv_o)
 
 kable(data.frame(Algorithm,Modularity),
-      caption = "Modularity Scores des Organisationsnetzwerks basierend auf verschiedenen Community-Algorithmen")
+      caption = "Tabelle 2:Modularity Scores des Organisationsnetzwerks basierend auf verschiedenen Community-Algorithmen")
 ```
+
+
+Insgesamt konnten 12 distinkte Communities Identifiziert werden. Darunter das primär wirtschaftlich geprägte Netzwerk um die Universität Zürich (Community 1), das ostschweizerische Netzwerk um die Universität St.Gallen (Community 2), Sport und Freizeit in Community 3, Politische Inklusion mit einem Flavour von Ökologie in Community 5, die Glarner Comminity in Community 6, das Zentralschweizer Netz in Community 7, Umwelt und Verkehr in Communities 8 und 9.
+
+Communities 4, 10, 11 und 12 konnten nicht klar identifiziert werden, eine Übersicht findet sich in der Tabelle 3
+
 
 
 ```{r}
 # Organisationen - Community
 set.seed(12345)
 
-SR_organisationen_tidy %>%
-  activate(edges) %>% 
-  filter(weight > 1) %>% 
+SR_organisationen_tidy_com  %>% 
   activate(nodes) %>% 
   slice(index_org) %>% 
+  mutate(group_louvain= as.factor(group_louvain())) %>% 
   ggraph(layout = "fr") +
   geom_edge_link(aes(width = weight),
                  alpha = 0.5,
@@ -436,6 +449,11 @@ SR_organisationen_tidy %>%
   geom_node_text(aes(label = name),
                  repel = TRUE,
                  size = 3) +
+   geom_mark_hull(aes(x = x, 
+                     y = y, 
+                     fill = group_louvain, 
+                     label = group_louvain),
+                 concavity = 6) +
   scale_edge_width(range = c(0.2, 0.8)) +
   scale_size(range = c(1, 6)) + 
   labs(title = "Organisationsnetzwerk - Geteilte Parlamentarier:innen",
@@ -445,4 +463,29 @@ SR_organisationen_tidy %>%
        caption = "Organisationen mit einer Gewichtung von <= 1 wurden herausgefiltert.")
 ```
 
+
+```{r}
+Communities <- c()
+
+for(i in 1:12){
+  text <- paste("Community ", as.character(i))
+  Communities <- append(Communities, text)
+}
+
+Kategorie <-  c("Wirtschaft Zürich",
+            "Ostschweizer Netzwerk",
+            "Sport und Freizeit",
+            "-",
+            "Politische Inklusion und Ökologie",
+            "Glarner Community",
+            "Zentralschweizer Netz",
+            "Umwelt und Verkehr",
+            "Umwelt und Verkehr",
+            "-",
+            "-",
+            "-")
+
+kable(as.data.frame(Communities, Kategorie),
+      caption = "Tabelle 3: Interpretation der Communities im organisationalen Netzwerk")
+```
 

@@ -12,7 +12,30 @@ editor_options:
 
 
 
+
 ## Anhang  - R-Code
+
+### Heimarbeit4_Bazzani_Keiser_Shehadeh
+
+Bis anhin haben wir unser Netzwerk als Ein-Knoten-Netzwerk dargestellt. Kurz zusammengefasst stellten die Knoten die einzelnen Ständerät:innen dar. Die Kanten bezogen sich auf die gemeinsamen Mitgliedschaften in den jeweiligen Lobby-Organisationen. Alle Kanten des Graphen galten dabei als ungerichtet, da wir davon ausgingen, dass sich die Personen jeweils gegenseitig kennen und wahrnehmen. Wir stellten Verbindungen zwischen Ständeräten dar, die nicht in der gleichen Partei tätig sind und verglichen diese mit dem dichteren Netzwerk mit allen innerparteilicher Edges.
+
+In der Heimarbeit 4 fassen wir die wichtigsten Ergebnisse zusammen. Einerseits zeigen wir auf, wie die Parlamentarier: innen über die Organisationen miteinander verbunden sind und welche Communities entstanden sind. Wir betrachten zuerst die Ergebnisse von den Organisationen und Parlamentarierinnen getrennt an und fügen die Netzwerke als Bipartites Netzwerk mit zwei verschiedenen Knotenattribute zusammen. 
+
+Das Ständerätliche Netzwerk (Abbildung 1.) zeigt auf wie die jeweiligen Ständeräten durch die gemeinsame Einsitzen in den Organisationen miteinander verbunden sind. Je breiter die Kanten, desto mehr Sitze teilen sich die Parlamentarier: innen in der selben Organisation. Die Parlamentarier: innen unterscheiden sich durch die Färbung der Knoten, welche die jeweilige Parteifarben signalisieren. Wie bereits in den vorherigen Heimarbeiten erwähnt, sind insbesondere Mitte-Partei-Mitglieder zentrale Akteure des Netzwerkes. 
+Neu betrachten wir dazu das Organisationnetzwerk des Ständerates (Abbildung 2). Die Knoten stellen die Lobbyorganisationen dar und diese werden mit Parlamentarier: innen welche in beiden oder mehrere Organisationen ein Verbindung aufweisen vernetzt. Unterteilt wurden die Organisationen mit der Färbung der Knoten durch Branchenzugehörigkeit. Aus Platzgründen wurden die jeweiligen Kanten entfernt, die eine Gewichtung von <= 1 aufweisen. 
+Des Weiteren wollen wir innerhalb der oben beschriebenen Netzwerke Teilgruppen und Communities bestimmen. In der Netzwerksoziologie wird eine Comminity als Subste der Nodes mit einer höheren Kantendichte als der Rest des Netzwerkes definiert (Vergleich Radichhi et. al 2004). Um diese Subsets zu identifizieren wird eine Auswahl an Algorithmen verwendet, wie sie auch von Douglas A. Luke in seiner User's Guide to Network Analysis vorgeschlagen werden. Die Community Detection wird sowohl auf die Parlamentarier:innen als auch das Organisationsnetzwerk angewendet. Basierend auf Douglas A. Lukes Methode (vgl. Luke 2015: 118) versuchten wir in einem ersten Schritt den Algorithmus zu finden, welcher den höchsten Modularitätswert vorweist. Im Falle der Parlamentarier:innen wäre dies *Louvian*. 
+
+Wendet man den Algorithmus auf das Netzwerk an, so werden insgesamt sieben verschiedene Communities identifiziert. Zwei dieser sieben lasssen sich dadurch erklären, dass sie atomisierte und innerhalb des Netzwerkes nicht verbundene Politiker:innen darstellen (Community 6 und 7) (Abbildung 3). Communities eins und zwei weisen eine starke Überschneidung auf und hier sind keine klaren Parteimuster zu erkennen. Gerade in Community 2 sind die Parteien mit vier Grünen und jeweils drei Politiker:innen der SP und SVP relativ ausgeglichen. Die Community 3 besteht ausschliesslich aus FDP und Mitte-Politiker: innen. 
+
+Die Interpretation der identifizierten Communities bleibt dabei in den Händen der Forschenden und die Algorithmen machen tätigen jeweils keine qualitätive Einordnung der identifizierten Subsets.
+
+Wesentlich spannender und eindeutiger gestaltet sich die Community Detection bei den Organisationen. Alle verwendeten Algorithmen kommen hier auf ähnliche Modularitätswert. Der Einfachheit und Vergleichbarkeit halber wurde auch hier der *Louvian*-Algorithmus weitervwerendet. 
+Insgesamt konnten 12 distinkte Communities (Abbildung 4) Identifiziert werden. Darunter das primär wirtschaftlich geprägte Netzwerk um die Universität Zürich (Community 1), das ostschweizerische Netzwerk um die Universität St.Gallen (Community 2), Sport und Freizeit in Community 3, Politische Inklusion mit einem Flavour von Ökologie in Community 5, die Glarner Comminity in Community 6, das Zentralschweizer Netz in Community 7, Umwelt und Verkehr in Communities 8 und 9. Communities 4, 10, 11 und 12 konnten nicht klar identifiziert werden, eine Übersicht findet sich in der Tabelle 3.
+
+
+Zusätzlich betrachten wir unser Netzwerk als Bipartites Netzwerk und erstellen diese anhand der Edgeliste (Parlamentarier: in und Organisation (Event)). Dabei differenzierten wir die Knoten zwischen Parlamentarier: innen (45 Parlamentarier: innen) und die jeweiligen Lobbyorganisationen (636 Organisationen), und zeigen auf über welche Organisationen die jeweiligen Parlamentarier: innen miteinander affiliiert sind( Abbildung xy). 
+
+Hervorheben möchten wir in unserer Netzwerkanalyse, dass es klare Erkennungen der Verbindungen durch die Communities gibt. Wie bereits oben erwähnt besteht Community 3 ausschliesslich aus FDP und Mitte-Politiker: innen. Dies zeigt auf, dass das Netzwerk der Standerät: innen einen klaren mitte-rechts-Bias besitzt. Zusätzlich können wir beobachten, dass grosse Instiutionen, wie die Universitäten Zürich und St. Gallen einen hohen Einflussgrad innerhalb des Organisationsnetzwerkes haben. Auffallend sind auch die Interessen – und standortsbedingten Verbindungen. Dies zeigt sich anhand der Glarner-Community oder auch durch die Verbindungen von VCS, Pro Natura und WWF innerhalb der Community 2. 
 
 ```{r}
 # Pakete laden

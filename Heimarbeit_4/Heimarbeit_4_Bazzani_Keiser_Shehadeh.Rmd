@@ -10,13 +10,6 @@ editor_options:
 ## Aufgabenblatt zur Heimarbeit 4
 ### Methoden der sozialen Netzwerkanalyse
 
-
-
-
-## Anhang  - R-Code
-
-### Heimarbeit4_Bazzani_Keiser_Shehadeh
-
 Bis anhin haben wir unser Netzwerk als Ein-Knoten-Netzwerk dargestellt. Kurz zusammengefasst stellten die Knoten die einzelnen Ständerät:innen dar. Die Kanten bezogen sich auf die gemeinsamen Mitgliedschaften in den jeweiligen Lobby-Organisationen. Alle Kanten des Graphen galten dabei als ungerichtet, da wir davon ausgingen, dass sich die Personen jeweils gegenseitig kennen und wahrnehmen. Wir stellten Verbindungen zwischen Ständeräten dar, die nicht in der gleichen Partei tätig sind und verglichen diese mit dem dichteren Netzwerk mit allen innerparteilicher Edges.
 
 In der Heimarbeit 4 fassen wir die wichtigsten Ergebnisse zusammen. Einerseits zeigen wir auf, wie die Parlamentarier: innen über die Organisationen miteinander verbunden sind und welche Communities entstanden sind. Wir betrachten zuerst die Ergebnisse von den Organisationen und Parlamentarierinnen getrennt an und fügen die Netzwerke als Bipartites Netzwerk mit zwei verschiedenen Knotenattribute zusammen. 
@@ -36,6 +29,9 @@ Insgesamt konnten 12 distinkte Communities (Abbildung 4) Identifiziert werden. D
 Zusätzlich betrachten wir unser Netzwerk als Bipartites Netzwerk und erstellen diese anhand der Edgeliste (Parlamentarier: in und Organisation (Event)). Dabei differenzierten wir die Knoten zwischen Parlamentarier: innen (45 Parlamentarier: innen) und die jeweiligen Lobbyorganisationen (636 Organisationen), und zeigen auf über welche Organisationen die jeweiligen Parlamentarier: innen miteinander affiliiert sind( Abbildung xy). 
 
 Hervorheben möchten wir in unserer Netzwerkanalyse, dass es klare Erkennungen der Verbindungen durch die Communities gibt. Wie bereits oben erwähnt besteht Community 3 ausschliesslich aus FDP und Mitte-Politiker: innen. Dies zeigt auf, dass das Netzwerk der Standerät: innen einen klaren mitte-rechts-Bias besitzt. Zusätzlich können wir beobachten, dass grosse Instiutionen, wie die Universitäten Zürich und St. Gallen einen hohen Einflussgrad innerhalb des Organisationsnetzwerkes haben. Auffallend sind auch die Interessen – und standortsbedingten Verbindungen. Dies zeigt sich anhand der Glarner-Community oder auch durch die Verbindungen von VCS, Pro Natura und WWF innerhalb der Community 2. 
+
+
+## Anhang  - R-Code
 
 ```{r}
 # Pakete laden

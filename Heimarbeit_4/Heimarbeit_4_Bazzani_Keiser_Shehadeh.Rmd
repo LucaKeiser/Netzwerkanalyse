@@ -254,12 +254,10 @@ SR_parlamentarier_tidy <- as_tbl_graph(SR_parlamentarier_igraph) %>%
 
 ## Organisationen
 
-```{r}
-# Organisationsnetzwerk ist viel zu gross...
-# Kann anhand meherer Kriterien gefiltert werden (Ort, Branche, Zentralitätsmasse etc.)
-# Hier werden Kanten entfernt, welche eine Gewichtung <= 1 aufweisen. Das heisst, es werden nur 
-# Organisationen berücksichtigt, welche sich mehr als 1 Parlamentarier:in "teilen"
+Das ganze Organisationsnetzwerk ist viel zu gross. Es kann anhand meherer Kriterien gefiltert werden (Ort, Branche, Zentralitätsmasse etc.). Hier werden zuerst Kanten entfernt, welche eine Gewichtung <= 1 aufweisen. Das heisst, es werden nur
+Organisationen berücksichtigt, welche sich mehr als 1 Parlamentarier:in "teilen".
 
+```{r}
 # in einem ersten Schritt muss dazu ein Filterungsindex erstellt werden
 index_org <- SR_organisationen_tidy %>%
   activate(edges) %>% 
@@ -296,6 +294,7 @@ SR_organisationen_tidy %>%
 
 
 
+In einem zweiten Netzwerkgraphen werden Organistaionen entfernt, welche ein Degree von < 35 aufweisen.
 
 ```{r}
 set.seed(12345)
@@ -320,6 +319,7 @@ SR_organisationen_tidy %>%
        color = "Branche",
        caption = "Organisationen mit einem Degree < 35 wurden herausgefiltert.")
 ```
+
 
 
 ## Parlamentarier:innen
@@ -558,3 +558,6 @@ kable(as.data.frame(Communities, Kategorie),
 # Weiterführende Literatur
 
 Radicchi,Filippo; Claudio Castellano; Federico Cecconi; Vittorio Loreto; Domenico Parisi (2004): Defining and identifying communities in networks, Proceedings of the National Academy of Sciences, Volume 101, doi:10.1073/pnas.0400054101
+
+
+

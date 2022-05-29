@@ -246,7 +246,7 @@ SR_bipartite_tidy %>%
 
 ### Erstellen der Projektionen
 
-```{r}
+```{r echo=T, results='hide'}
 # Projektionen
 
 SR_projection <- bipartite.projection(SR_bipartite_tidy)
@@ -260,13 +260,13 @@ SR_parlamentarier_igraph <- SR_projection$proj2
 
 
 # Gewichtung
-#get.adjacency(SR_organisationen_igraph,
-              #sparse = FALSE,
-              #attr = "weight")
+get.adjacency(SR_organisationen_igraph,
+              sparse = FALSE,
+              attr = "weight")
 
-#get.adjacency(SR_parlamentarier_igraph,
-              #sparse = FALSE,
-              #attr = "weight")
+get.adjacency(SR_parlamentarier_igraph,
+              sparse = FALSE,
+              attr = "weight")
 
 
 # ansehen

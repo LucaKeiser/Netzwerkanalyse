@@ -41,6 +41,9 @@ library(ggraph)
 library(igraph)
 library(knitr)
 library(ggforce)
+library(sna)
+library(janitor)
+library(gridExtra)
 
 theme_set(theme_light())
 
@@ -554,6 +557,106 @@ Kategorie <-  c("Wirtschaft Zürich",
 kable(as.data.frame(Communities, Kategorie),
       caption = "Tabelle 3: Interpretation der Communities im organisationalen Netzwerk")
 ```
+
+# Modelling
+
+
+
+```{r}
+parameters_network <- function(name_net, network){
+    
+  # Density
+  net_dens <- as.numeric(graph.density(network))
+  
+  # Size (edges)
+  net_size <- as.numeric(gsize(network))
+  
+  # Size (nodes)
+  net_nodes <- as.numeric(gorder(network))
+  
+  # Mean Degree
+  net_mdeg <- as.numeric(mean(igraph::degree(network)))
+  
+  # Transitivity
+  net_trans <- as.numeric(transitivity(network))
+  
+  output <- c(name_net, net_dens, net_size, net_nodes, net_mdeg, net_trans)
+  
+  return(output)
+
+}
+
+
+parliment_orgs <- parameters_network("Parlimenatry Network", SR_organisationen_tidy_com)
+
+
+```
+
+```{r}
+
+net_nodes <- gorder(SR_organisationen_tidy_com)
+net_dens <- graph.density(SR_organisationen_tidy_com)
+
+erg_model <- erdos.renyi.game(net_nodes,
+                              net_dens,
+                              type='gnp')
+wsg_model <- watts.strogatz.game(dim=1,
+                    size=net_nodes,
+                    nei = 2,
+                    p=.25)
+
+bg_model <- barabasi.game(net_nodes,
+              out.dist=c(.15,.6,.25),
+              directed=FALSE,
+              zero.appeal=2)
+
+
+erg_model_param <- parameters_network("Erdos Renyi Game", erg_model)
+wsg_model_param <- parameters_network("Watts Strogatz Game", wsg_model)
+bg_mode_param <- parameters_network("Barabasi Game", bg_model)
+
+```
+
+```{r}
+
+Dataframe_Names <- c("Dataset Name", "Density", "Size (edges)", "Size (nodes)", "Mean Degree", "Transitivity")
+
+df_model <- as.data.frame(do.call(rbind,list(Dataframe_Names,
+       parliment_orgs,
+       erg_model_param,
+       wsg_model_param,
+       bg_mode_param)))
+
+df_model <- df_model %>% 
+  row_to_names(row_number = 1)
+
+kable(df_model, caption = "Table 4: Model comparison empirical network vs. modelled networks")
+
+```
+
+```{r}
+
+p1 <- SR_organisationen_tidy_com %>% 
+  activate(edges) %>% 
+  ggraph(layout = "fr") +
+  geom_edge_link() + 
+  geom_node_point() +
+  scale_edge_width(range = c(0.2, 0.8)) +
+  scale_size(range = c(1, 6)) +
+  labs(title = "Empirisches Netzwerk",
+       subtitle = "Organisationen im Ständerat, Verbunden über Parlamentarier:innen")
+
+p2 <- as_tbl_graph(erg_model) %>% 
+  activate(edges) %>% 
+  ggraph(layout = "fr") +
+  geom_edge_link() + 
+  geom_node_point() +
+  scale_edge_width(range = c(0.2, 0.8)) +
+  scale_size(range = c(1, 6)) +
+  labs(title = "Erdos Renyi Game - Modellierung",
+       subtitle = "Modell basierend auf empirischen Daten")
+
+grid.arrange(p1, p2, ncol = 2)
 
 # Weiterführende Literatur
 

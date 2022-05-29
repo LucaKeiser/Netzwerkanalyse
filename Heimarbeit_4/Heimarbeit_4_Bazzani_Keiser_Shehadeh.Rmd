@@ -3,9 +3,9 @@ title: "Aufgabenblatt zur Heimarbeit 4"
 author: "Mirco Bazzani, Amir Shehadeh &  Luca Keiser"
 date: '2022-05-26'
 output:
-  pdf_document: default
-  html_document: default
   word_document: default
+  html_document: default
+  pdf_document: default
 editor_options:
   chunk_output_type: console
 ---
@@ -126,7 +126,7 @@ SR_bipartite_igraph <- graph.data.frame(edgelist,
 
 # Noch nicht ganz...
 SR_bipartite_igraph
-list.vertex.attributes(SR_bipartite_igraph)
+#list.vertex.attributes(SR_bipartite_igraph)
 
 # Die Konten müssen noch differenziert werden (Parlamentarier:innen vs. Organisationen)
 V(SR_bipartite_igraph)$name
@@ -139,10 +139,10 @@ V(SR_bipartite_igraph)$type <- V(SR_bipartite_igraph)$name %in% edgelist[,1]$par
 
 # Jetzt sieht es gut aus!
 SR_bipartite_igraph
-list.vertex.attributes(SR_bipartite_igraph)
+#list.vertex.attributes(SR_bipartite_igraph)
 
 # 45 Parlamentarier:innen und 636 Organisationen
-table(get.vertex.attribute(SR_bipartite_igraph)$type)
+#table(get.vertex.attribute(SR_bipartite_igraph)$type)
 ```
 
 
@@ -187,7 +187,7 @@ SR_bipartite_tidy <- SR_bipartite_tidy %>%
 # aktualisieren des igraph-objekts
 SR_bipartite_igraph <- as.igraph(SR_bipartite_tidy)
 
-list.vertex.attributes(SR_bipartite_igraph)
+#list.vertex.attributes(SR_bipartite_igraph)
 
 # ansehen
 SR_bipartite_tidy %>% 
@@ -615,7 +615,7 @@ net_dens <- graph.density(SR_organisationen_tidy_com)
 erg_model <- erdos.renyi.game(n = net_nodes,
                               p.or.m = net_dens,
                               type='gnp')
-wsg_model <- watts.strogatz.game(dim=.5,
+wsg_model <- watts.strogatz.game(dim=1,
                     size=net_nodes,
                     nei = 1,
                     p=.1)

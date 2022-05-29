@@ -2,8 +2,11 @@
 title: "Aufgabenblatt zur Heimarbeit 4"
 author: "Mirco Bazzani, Amir Shehadeh &  Luca Keiser"
 date: '2022-05-26'
-output: html_document
-editor_options: 
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+editor_options:
   chunk_output_type: console
 ---
 
@@ -31,12 +34,27 @@ Zusätzlich betrachten wir unser Netzwerk als Bipartites Netzwerk und erstellen 
 
 Hervorheben möchten wir in unserer Netzwerkanalyse, dass es klare Erkennungen der Verbindungen durch die Communities gibt. Wie bereits oben erwähnt besteht Community 3 ausschliesslich aus FDP und Mitte-Politiker:innen. Dies zeigt auf, dass das Netzwerk der Standerät:innen einen klaren mitte-rechts-Bias besitzt. Zusätzlich können wir beobachten, dass grosse Instiutionen, wie die Universitäten Zürich und St. Gallen einen hohen Einflussgrad innerhalb des Organisationsnetzwerkes haben. Auffallend sind auch die Interessen – und standortsbedingten Verbindungen. Dies zeigt sich anhand der Glarner-Community oder auch durch die Verbindungen von VCS, Pro Natura und WWF innerhalb der Community 2.
 
+Basierend auf den Parametern des Organisationsnetzwerkes unserer Arbeit wurden anschliessend randomisierte Modelle erstellt. Aufbauend auf Kapitel 10 von Douglas A. Lukes Werk wurden dafür drei Modelltypen verwendet, das Poisson Random Graph Model (oder Erdös-Rény), ein Small World Modell und schlussenldich noch ein Scale Free Model (vgl. Luke 2015: 147 ff.). Randomisierte Netzwerke werden in der Regel dazu verwendet, grundlegende Dynamiken in Netzwerken herauszuarbeiten und so Informationen über Strukturdynamiken in empirischen Netzwerken zu erhalten. In unserem Fall und ebenfalls basierend auf Douglas A. Lukes vorgehen haben wir aber mehrere Netzwerkmodelle anhand der gegebenen Parameter unseres empirischen Netzwerkes erstellt und diese im Anschluss verglichen (Tabelle 4).
+
+Obwohl das Erdös-Rény-Game als eines der simpelsten randomisierten Modelle in der Netzwerkforschung gehandelt wird hat es in unserem Fall ein Netzwerk erstellt, welches erstaunlich dicht an den Original-Kennzahlen des Empirischen Organisationsnetzwerkes liegen (siehe Tabelle 4). Dies liegt daran, dass das Originalnetzwerk der Organisationen einen unheimlich dicht vernetzten Kern aufweist, um diesen Kern aber eine Vielzahl atomisierter Oragnisationen ohne edges verteilt sind. Diese blumenförmige Anordnung der Nodes konnte im simulierten Modell nicht nachgeahmt werden. 
+
+Im Anschluss an die Random Graph Models wurde noch ein statistisches Modell anhand des Organisationsnetzwerkes erarbeitet. Anders als bei dem vorherigen Beispiel wurden hier die Filterkriterien wieder verwendet, um das stark atomisierte Netzwerk etwas zu verdichten und somit auch die Anzahl erklärender Variablen zu vermindern.
+
+Wie bei den Visualisierungen des Bipartiten Netzwerkes wurde eine Degree-Schwelle von 35 gewählt.
+
+In Anlehnung an das elfte Kapitel von Douglas A. Luke wurde ein Exponetial Random Graph Model (kurz ERGM) erstellt. ERGMs verwenden Charakteristiken einzelner Netzwerkelemente (in unserem Falle Organisationen) und versucht anhand dieser die Charakteristiken des gesamten Modells vorherzusagen. Verwendet wird dabei eine Monte Carlo Markov Chain Maximum Likelihood-Estimation, welche die Wahrscheinlichkeit einer Verbindung zwischen zwei Nodes mit gegebenen erklärenden Variablen vorherzusagen versucht (vgl. Luke 2015: 164).
+
+Als Vergleichsvignette haben wir ein Nullmodell erstellt, welches ohne erklärende Variablen auskommt. Dieses Nullmodell soll nun mit weiteren Node-Attributen angereichert werden. Wir sind dabei von der Hypothese ausgegangen, dass die Vernetzungswahrscheinlichkeit basierend auf der Branche und dem Standort der Organisation steigt (Tabelle 5 & Abbildung 5).
+
+Da der AIC mit der Hinzunahme der beiden Variablen gesunken ist gehen wir von einer verbesserten Erklärungsleistung aus. Es ist jedoch anzunehmen, dass die Industrie durch den grösseren Anteil signifikanter Kategorien einen grösseren Anteil zur Erklärungsleistung beiträgt (Tabelle 6). 
+
+Die Simulation geht von einer viel stärkeren Vernetzung innerhalb unseres Graphen aus, als sie empirisch festgestellt werden kann. Es wäre also zu empfehlen, die Simulation in einer folgestudie noch durch lokale strukturelle vorhersagen zu ergänzen (vgl. Luke 2015: 177). Dies wurde aktuell aufgrund der hohen Rechenintensivität und gesteigerten Komplexität unterlassen.
 
 Abschliessend möchten wir noch auf eine aktuelle Studie von Rossier et al. 2022 verweisen. Die Studie befasst sich mit dem Netzwerk Schweizerischer Eliten und dessen zeitliche Entwicklung respektive Veränderung. Konkret beschreiben die Autoren, wie sich die Beziehungen innerhalb des Elitenetzwerkes zwischen den Jahren 1910 und 2015 verändert haben. Es handelt sich nicht um eine Lückenlose Darstellung. Der Untersuchungszeitraum wurde auf sieben Schlüsseljahre beschränkt (1910, 1937, 1957, 1980, 200, 2010 und 2015). 
-Das Netzwerk seinerseits setzt sich aus insgesamt 22'262 Elitepersonen aus Wirtschaft, Politik und Wissenschaft und 2587 Organisationen aus acht Schlüsselindustrien zusammen. Es zeigte sich, dass sich der Kern des Netzwerks über den Untersuchungszeitraum hinweg stets von Wirtschaftsakteuren dominiert wurde. Während Krisenzeiten (nach dem 2. Weltkrieg und der Finanzkrise) wurden der Kern jedoch diversifiziert, idem andere Akteure aus Politik und Gewerkschaften inkludiert wurden (vgl. Rossier et al. 2022). 
+Das Netzwerk seinerseits setzt sich aus insgesamt 22'262 Elitepersonen aus Wirtschaft, Politik und Wissenschaft und 2587 Organisationen aus acht Schlüsselindustrien zusammen. Es zeigte sich, dass sich der Kern des Netzwerks über den Untersuchungszeitraum hinweg stets von Wirtschaftsakteuren dominiert wurde. Während Krisenzeiten (nach dem 2. Weltkrieg und der Finanzkrise) wurden der Kern jedoch diversifiziert, idem andere Akteure aus Politik und Gewerkschaften inkludiert wurden (vgl. Rossier et al. 2022).
 
 
-_Anzahl Wörter: 856_
+_Anzahl Wörter: 1'292_
 
 ## Literaturverzeichnis
 
@@ -60,6 +78,7 @@ library(ggforce)
 library(sna)
 library(janitor)
 library(gridExtra)
+library(ergm)
 
 theme_set(theme_light())
 
@@ -554,7 +573,11 @@ kable(as.data.frame(Communities, Kategorie),
 
 # Modelling
 
+## Random Network Models
+
 ```{r}
+
+# Standardisierte Funktion wird geschrieben, damit wir in einem Schritt die Netzwerkparameter aller Modelle herausarbeiten können.
 parameters_network <- function(name_net, network){
     
   # Density
@@ -589,18 +612,18 @@ parliment_orgs <- parameters_network("Parlimenatry Network", SR_organisationen_t
 net_nodes <- gorder(SR_organisationen_tidy_com)
 net_dens <- graph.density(SR_organisationen_tidy_com)
 
-erg_model <- erdos.renyi.game(net_nodes,
-                              net_dens,
+erg_model <- erdos.renyi.game(n = net_nodes,
+                              p.or.m = net_dens,
                               type='gnp')
-wsg_model <- watts.strogatz.game(dim=1,
+wsg_model <- watts.strogatz.game(dim=.5,
                     size=net_nodes,
-                    nei = 2,
-                    p=.25)
+                    nei = 1,
+                    p=.1)
 
 bg_model <- barabasi.game(net_nodes,
-              out.dist=c(.15,.6,.25),
+              out.dist=c(.33,.33,.33),
               directed=FALSE,
-              zero.appeal=2)
+              zero.appeal=1)
 
 
 erg_model_param <- parameters_network("Erdos Renyi Game", erg_model)
@@ -608,6 +631,8 @@ wsg_model_param <- parameters_network("Watts Strogatz Game", wsg_model)
 bg_mode_param <- parameters_network("Barabasi Game", bg_model)
 
 ```
+
+## Tabelle 4
 
 ```{r}
 
@@ -622,11 +647,15 @@ df_model <- as.data.frame(do.call(rbind,list(Dataframe_Names,
 df_model <- df_model %>% 
   row_to_names(row_number = 1)
 
-kable(df_model, caption = "Table 4: Model comparison empirical network vs. modelled networks")
+kable(df_model, caption = "Tabelle 4: Model comparison empirical network vs. modelled networks")
 
 ```
 
+## Abbildung 4
+
 ```{r}
+
+# Vergleich empirisches Netzwerk mit Modell
 
 p1 <- SR_organisationen_tidy_com %>% 
   activate(edges) %>% 
@@ -649,6 +678,121 @@ p2 <- as_tbl_graph(erg_model) %>%
        subtitle = "Modell basierend auf empirischen Daten")
 
 grid.arrange(p1, p2, ncol = 2)
+```
 
+## Statistical Network Models
+
+```{r}
+
+edges <- SR_organisationen_tidy_com %>%
+  activate(edges) %>%
+  data.frame()
+
+nodes <- SR_organisationen_tidy_com %>%
+  activate(nodes) %>%
+  filter(degree >= 35) %>% 
+  data.frame() %>% 
+  replace_na(list(location_org = "NA", industry_org  = "NA"))
+
+network_base <- network(edges, vertex.attr = nodes, matrix.type = "edgelist", ignore.eval = FALSE, directed = FALSE)
+
+data(network_base)
+null_model <- ergm(network_base ~ edges, control = control.ergm(seed = 10))
+summary(null_model)
+
+```
+
+## Abbildung 5
+
+```{r}
+SR_organisationen_tidy_com %>% 
+  activate(nodes) %>%
+  filter(degree >= 35) %>% 
+  data.frame() %>% 
+  ggplot(aes(x = industry_org, y = degree)) +
+  geom_boxplot() +
+  coord_flip() +
+  labs(title = "Industrie und Degree",
+       subtitle = "Visualisierung des Zusammenhanges zwischen der Industrie und dem Degree des Unternehmens",
+       caption = "Organisationen mit einem Degree unter 35 wurden herausgefilter.")
+
+SR_organisationen_tidy_com %>% 
+  activate(nodes) %>% 
+  filter(degree >= 35) %>% 
+  data.frame() %>% 
+  ggplot(aes(x = location_org, y = degree)) +
+  geom_boxplot() +
+  coord_flip() +
+    labs(title = "Standort und Degree",
+       subtitle = "Visualisierung des Zusammenhanges zwischen dem Standort und dem Degree des Unternehmens",
+       caption = "Organisationen mit einem Degree unter 35 wurden herausgefilter.")
+  
+```
+
+## Tabelle 5
+
+```{r}
+data(network_base)
+
+full_model <- ergm(network_base ~ edges + nodefactor("location_org") + nodefactor("industry_org"),
+                   control = control.ergm(seed = 10))
+summary(full_model)
+```
+
+# Simulation
+
+## Tabelle 5
+
+```{r}
+simu <- simulate(full_model, nsim = 1, seed = 1234)
+
+summary(simu)
+```
+
+## Abbildung 6
+
+```{r}
+
+simu_tbl <- as_tbl_graph(simu)
+
+set.seed(12345)
+SR_organisationen_tidy_com  %>% 
+  activate(nodes) %>% 
+  filter(degree >= 35) %>% 
+  ggraph(layout = "fr") +
+  geom_edge_link(color = "grey",
+                 alpha = 0.5,
+                 show.legend = FALSE) +
+  geom_node_point(aes(color = industry_org,
+                      size  = degree)) +
+  geom_node_text(aes(label = name),
+                 check_overlap = TRUE,
+                 size = 2) +
+  scale_edge_width(range = c(0.1, 0.75)) +
+  scale_size(range = c(1, 6)) + 
+  labs(title = "Empirisches Organisationsnetzwerk",
+       size = "Degree",
+       color = "Branche",
+       caption = "Organisationen mit einem Degree < 35 wurden herausgefiltert.")
+
+simu_tbl %>%
+  activate(nodes) %>% 
+  filter(degree >= 35) %>% 
+  ggraph(layout = "fr") +
+  geom_edge_link(color = "grey",
+                 alpha = 0.5,
+                 show.legend = FALSE) +
+  geom_node_point(aes(color = industry_org,
+                      size  = degree)) +
+  geom_node_text(aes(label = name),
+                 check_overlap = TRUE,
+                 size = 2) +
+  scale_edge_width(range = c(0.1, 0.75)) +
+  scale_size(range = c(1, 6)) + 
+  labs(title = "Simuliertes Organisationsnetzwerk",
+       subtitle = "Methode: ERGM",
+       size = "Degree",
+       color = "Branche",
+       caption = "Organisationen mit einem Degree < 35 wurden herausgefiltert.")
 ```
 

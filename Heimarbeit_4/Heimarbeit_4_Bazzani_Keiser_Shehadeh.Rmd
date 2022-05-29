@@ -523,6 +523,8 @@ SR_organisationen_tidy_com  %>%
 ```
 
 
+## Tabelle 3
+
 ```{r}
 Communities <- c()
 

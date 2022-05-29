@@ -109,7 +109,7 @@ edgelist <- doc_SR %>%
 
 
 # ansehen
-edgelist
+#head(edgelist)
 
 edgelist %>% 
   count(parlamentarier_name,
@@ -125,20 +125,20 @@ SR_bipartite_igraph <- graph.data.frame(edgelist,
 
 
 # Noch nicht ganz...
-SR_bipartite_igraph
+#SR_bipartite_igraph
 #list.vertex.attributes(SR_bipartite_igraph)
 
 # Die Konten müssen noch differenziert werden (Parlamentarier:innen vs. Organisationen)
-V(SR_bipartite_igraph)$name
-edgelist[,1]
-edgelist[,2]
+#V(SR_bipartite_igraph)$name
+#edgelist[,1]
+#edgelist[,2]
 
 
 V(SR_bipartite_igraph)$type <- V(SR_bipartite_igraph)$name %in% edgelist[,1]$parlamentarier_name
 
 
 # Jetzt sieht es gut aus!
-SR_bipartite_igraph
+#SR_bipartite_igraph
 #list.vertex.attributes(SR_bipartite_igraph)
 
 # 45 Parlamentarier:innen und 636 Organisationen
@@ -250,7 +250,7 @@ SR_bipartite_tidy %>%
 # Projektionen
 
 SR_projection <- bipartite.projection(SR_bipartite_tidy)
-SR_projection
+head(SR_projection)
 
 # 1) Organisationen
 SR_organisationen_igraph <- SR_projection$proj1
@@ -260,19 +260,19 @@ SR_parlamentarier_igraph <- SR_projection$proj2
 
 
 # Gewichtung
-get.adjacency(SR_organisationen_igraph,
-              sparse = FALSE,
-              attr = "weight")
+#get.adjacency(SR_organisationen_igraph,
+              #sparse = FALSE,
+              #attr = "weight")
 
-get.adjacency(SR_parlamentarier_igraph,
-              sparse = FALSE,
-              attr = "weight")
+#get.adjacency(SR_parlamentarier_igraph,
+              #sparse = FALSE,
+              #attr = "weight")
 
 
 # ansehen
 # sehr spärlich...
-table(E(SR_organisationen_igraph)$weight)
-table(E(SR_parlamentarier_igraph)$weight)
+#table(E(SR_organisationen_igraph)$weight)
+#table(E(SR_parlamentarier_igraph)$weight)
 
 
 
